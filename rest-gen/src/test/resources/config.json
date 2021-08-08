@@ -1,0 +1,11 @@
+{
+  "packageName": "org.some",
+  "excludes": [
+    "org.some.entity.Audit"
+  ],
+  "mappings": {
+    "org.platonos.entity.Person": {
+      "name" : "firstName"
+    }
+  }
+}

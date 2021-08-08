@@ -1,0 +1,12 @@
+type: object
+properties:
+  name:
+    type: string
+  birthDate:
+    type: string
+    format: date
+  address:
+    $ref: './address.yml'
+# Both properties are required
+required:
+  - name
