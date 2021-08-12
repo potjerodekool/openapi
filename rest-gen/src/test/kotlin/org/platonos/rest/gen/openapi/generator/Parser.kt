@@ -15,11 +15,4 @@ object Parser {
         return parser.parse(file) as OpenApi3
     }
 
-    fun resolve(openApi: OpenApi3): SchemasResolver {
-        val config = OpenApiGeneratorConfiguration()
-        val schemasResolver = SchemasResolver(config)
-        schemasResolver.visitOpenApi(openApi)
-        return schemasResolver
-    }
-
 }

@@ -19,8 +19,9 @@ class OpenApiGenerator {
     fun generate(options: Options,
                  build: Build) {
         val openApi = parse(options.fileName)
+        val config = OpenApiGeneratorConfigurationBuilder()
+            .createConfig(options)
 
-        val config = OpenApiGeneratorConfiguration()
         val schemasResolver = SchemasResolver(config)
         schemasResolver.visitOpenApi(openApi)
         val schemas = schemasResolver.getSchemas()
@@ -30,12 +31,12 @@ class OpenApiGenerator {
 
         openApiModelGenerator = OpenApiModelGenerator(config, platformSupport)
 
-        if (options.generateModels) {
-            generateModels(schemas, patchSchemas, options.modelPackageName, build)
+        if (config.generateModels) {
+            generateModels(schemas, patchSchemas, config, build)
         }
 
-        if (options.generateApiDefintions) {
-            generateApis(openApi, config, options, platformSupport, build)
+        if (config.generateApiDefintions || config.generateApiImplementations) {
+            generateApis(openApi, config, platformSupport, build)
         }
     }
 
@@ -46,21 +47,20 @@ class OpenApiGenerator {
 
     private fun generateModels(schemas: Map<String, Schema>,
                                patchSchemas: Map<String, Schema>,
-                               packageName: String,
+                               config: OpenApiGeneratorConfiguration,
                                build: Build) {
         openApiModelGenerator.generateModels(
             schemas,
             patchSchemas,
-            packageName,
+            config,
             build.sourceDir
         )
     }
 
     private fun generateApis(openApi: OpenApi3,
                              config: OpenApiGeneratorConfiguration,
-                             options: Options,
                              platformSupport: PlatformSupport,
                              build: Build) {
-        apisGenerator.generateApis(openApi, config, options, platformSupport, build.sourceDir)
+        apisGenerator.generateApis(openApi, config, platformSupport, build.sourceDir)
     }
 }

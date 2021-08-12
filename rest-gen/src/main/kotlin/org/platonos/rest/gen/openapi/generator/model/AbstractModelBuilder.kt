@@ -7,27 +7,25 @@ import org.platonos.rest.gen.element.builder.Builders
 import org.platonos.rest.gen.element.builder.MethodBuilder
 import org.platonos.rest.gen.element.builder.TypeElementBuilder
 import org.platonos.rest.gen.expression.FieldAccess
-import org.platonos.rest.gen.expression.NameExpression
+import org.platonos.rest.gen.expression.IdentifierExpression
 import org.platonos.rest.gen.expression.OperatorExpression
 import org.platonos.rest.gen.openapi.OpenApiGeneratorConfiguration
 import org.platonos.rest.gen.openapi.PlatformSupport
 import org.platonos.rest.gen.openapi.SchemaVisitor
-import org.platonos.rest.gen.statement.BlockStatement
 import org.platonos.rest.gen.statement.ExpressionStatement
 import org.platonos.rest.gen.statement.ReturnStatement
 import org.platonos.rest.gen.type.DeclaredType
 import org.platonos.rest.gen.type.Type
 
-abstract class AbstractModelBuilder(platformSupport: PlatformSupport,
-                                    config: OpenApiGeneratorConfiguration,
-                                    protected val packageName: String,
-                                    val sourcePath: SourcePath
+abstract class AbstractModelBuilder(
+    protected val platformSupport: PlatformSupport,
+    protected val config: OpenApiGeneratorConfiguration,
+    protected val packageName: String,
+    val sourcePath: SourcePath
 ) : SchemaVisitor<Any?, Any?> {
 
-    protected val platformSupport = platformSupport
-    protected val config = config
     protected val typeConverter = platformSupport.getTypeConverter()
-    private val modelNamingStrategy = config.modelNamingStrategy
+    protected val modelNamingStrategy = config.modelNamingStrategy
 
     protected lateinit var typeElementBuilder: TypeElementBuilder
 
@@ -46,7 +44,7 @@ abstract class AbstractModelBuilder(platformSupport: PlatformSupport,
         return typeElement
     }
 
-    fun visitProperties(schema: Schema, rootSchema: Schema): Any? {
+    private fun visitProperties(schema: Schema, rootSchema: Schema): Any? {
         schema.properties.forEach { (name, propertySchema) ->
             visitProperty(name, propertySchema, rootSchema)
         }
@@ -113,30 +111,31 @@ abstract class AbstractModelBuilder(platformSupport: PlatformSupport,
         }
     }
 
-    fun generateMethodsForProperty(name: String?,
-                                   propertySchema: Schema?,
-                                   schema: Schema,
-                                   rootSchema: Schema
+    private fun generateMethodsForProperty(name: String?,
+                                           propertySchema: Schema?,
+                                           schema: Schema,
+                                           rootSchema: Schema
     ) {
         if (name != null && propertySchema != null) {
             val type = createType(propertySchema)
             addGetter(name, type, propertySchema, schema)
-            addSetter(name, type, propertySchema, schema)
+            addSetter(name, type)
             addBuilderSetter(name, type, propertySchema, rootSchema)
         }
     }
 
-    fun addGetter(name: String,
-                  type: Type,
-                  propertySchema: Schema,
-                  schema: Schema
+    private fun addGetter(name: String,
+                          type: Type,
+                          propertySchema: Schema,
+                          schema: Schema
     ) {
         val getterName = createMethodName(name, true)
 
         val getterBuilder = Builders.method()
+            .withModifier(Modifier.PUBLIC)
             .withSimpleName(getterName)
             .withReturnType(type)
-            .withBody(ReturnStatement(FieldAccess(NameExpression("this"), NameExpression(name))))
+            .withBody(ReturnStatement(FieldAccess(IdentifierExpression("this"), IdentifierExpression(name))))
 
         val required = isRequiredField(schema, name)
 
@@ -177,13 +176,11 @@ abstract class AbstractModelBuilder(platformSupport: PlatformSupport,
         return schema.requiredFields.contains(name)
     }
 
-    fun addSetter(name: String, type: Type,
-                  propertySchema: Schema,
-                  schema: Schema
-    ) {
+    private fun addSetter(name: String, type: Type) {
         val setterName = createMethodName(name, false)
 
         val setterBuilder = Builders.method()
+            .withModifier(Modifier.PUBLIC)
             .withSimpleName(setterName)
 
         setterBuilder.withParameter()
@@ -195,9 +192,9 @@ abstract class AbstractModelBuilder(platformSupport: PlatformSupport,
         val setter = setterBuilder.withBody(
             ExpressionStatement(
                 OperatorExpression(
-                    FieldAccess(NameExpression("this"), NameExpression(name)),
+                    FieldAccess(IdentifierExpression("this"), IdentifierExpression(name)),
                     Operator.ASSING,
-                    NameExpression(name)
+                    IdentifierExpression(name)
                 )
             )
         ).build()
@@ -205,41 +202,11 @@ abstract class AbstractModelBuilder(platformSupport: PlatformSupport,
         typeElementBuilder.withEnclosedElement(setter)
     }
 
-    open fun addBuilderSetter(name: String, type: Type,
+    abstract fun addBuilderSetter(name: String, type: Type,
                               propertySchema: Schema,
-                              schema: Schema
-    ) {
+                              schema: Schema)
 
-        val setterBuilder = Builders.method()
-            .withSimpleName(name)
-
-        setterBuilder.withParameter()
-            .withSimpleName(name)
-            .withType(type)
-            .withModifier(Modifier.FINAL)
-            .build()
-
-        val returnType = createType(schema)
-
-        val body = BlockStatement(
-            ExpressionStatement(
-                OperatorExpression(
-                    FieldAccess(NameExpression("this"), NameExpression(name)),
-                    Operator.ASSING,
-                    NameExpression(name)
-                )
-            ),
-            ReturnStatement(NameExpression("this"))
-        )
-
-        val setter = setterBuilder
-            .withBody(body)
-            .withReturnType(returnType).build()
-
-        typeElementBuilder.withEnclosedElement(setter)
-    }
-
-    fun createMethodName(simpleName: String, getter: Boolean): String {
+    private fun createMethodName(simpleName: String, getter: Boolean): String {
         val prefix = if (getter) "get" else "set"
         val firstChar = simpleName[0].uppercaseChar()
 
@@ -252,13 +219,13 @@ abstract class AbstractModelBuilder(platformSupport: PlatformSupport,
 
     open fun getTypeDescriptor(schema: Schema): String {
         if (schema.type == "object") {
-            return modelNamingStrategy.getModelName(schema)!!
+            return modelNamingStrategy.createModelName(schema)
         } else {
             return schema.type
         }
     }
 
-    fun visitAllOfSchemas(schema: Schema): Any? {
+    private fun visitAllOfSchemas(schema: Schema): Any? {
         schema.allOfSchemas.forEach { otherSchema ->
             visitProperties(otherSchema, schema)
         }

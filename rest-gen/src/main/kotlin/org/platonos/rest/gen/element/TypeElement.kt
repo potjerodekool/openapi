@@ -4,6 +4,7 @@ import org.platonos.rest.gen.TreeVisitor
 import org.platonos.rest.gen.element.ElementFilter.fields
 import org.platonos.rest.gen.element.ElementFilter.methods
 import org.platonos.rest.gen.element.builder.TypeElementBuilder
+import org.platonos.rest.gen.type.DeclaredType
 
 class TypeElement(builder: TypeElementBuilder):
     AbstractElement<TypeElement>(builder), QualifiedNameable, Cloneable {
@@ -23,6 +24,10 @@ class TypeElement(builder: TypeElementBuilder):
         get() {
             return methods(enclosedElements)
         }
+
+    val interfaces: List<DeclaredType> = builder.interfaces
+
+    val hasInterfaces: Boolean = interfaces.isNotEmpty()
 
     override fun toString(): String {
         return simpleName

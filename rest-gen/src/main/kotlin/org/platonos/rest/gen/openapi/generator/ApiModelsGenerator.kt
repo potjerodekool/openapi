@@ -18,9 +18,11 @@ class OpenApiModelGenerator(private val config: OpenApiGeneratorConfiguration,
 
     fun generateModels(schemas: Map<String, Schema>,
                        patchSchemas: Map<String, Schema>,
-                       packageName: String,
+                       config: OpenApiGeneratorConfiguration,
                        targetDir: File) {
-        val compilationUnits = generateCompilationUnits(schemas, patchSchemas, packageName)
+
+        val packageName = config.modelPackageName
+        val compilationUnits = generateCompilationUnits(schemas, patchSchemas, config)
         val sourceFileExtension = platformSupport.getSourceFileExtension()
 
         val newCompilationUnits = organizeImports(compilationUnits)
@@ -51,15 +53,21 @@ class OpenApiModelGenerator(private val config: OpenApiGeneratorConfiguration,
 
     private fun generateCompilationUnits(schemas: Map<String, Schema>,
                                          patchSchemas: Map<String, Schema>,
-                                         packageName: String): Collection<CompilationUnit> {
+                                         config: OpenApiGeneratorConfiguration): Collection<CompilationUnit> {
+        val packageName = config.modelPackageName
         val sourcePath = SourcePath(schemas)
+        val dynamicModels = config.dynamicModels
 
-        schemas.forEach { ( modelName, schema ) ->
+        schemas
+            .filterNot { dynamicModels.contains(it.key) }
+            .forEach { ( modelName, schema ) ->
                 val modelBuilder = DefaultModelBuilder(platformSupport, config, packageName, sourcePath)
                 modelBuilder.buildModel(modelName, schema)
         }
 
-        patchSchemas.forEach { (modelName, schema) ->
+        patchSchemas
+            .filterNot { dynamicModels.contains(it.key) }
+            .forEach { (modelName, schema) ->
                 val patchModelBuilder = PatchModelBuilder(platformSupport, config, packageName, sourcePath)
                 patchModelBuilder.buildModel(modelName, schema)
         }

@@ -3,6 +3,7 @@ package org.platonos.rest.gen.openapi.generator
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.platonos.rest.gen.openapi.OpenApiGeneratorConfiguration
+import org.platonos.rest.gen.openapi.OpenApiGeneratorConfigurationBuilder
 import org.platonos.rest.gen.openapi.Options
 import org.platonos.rest.gen.openapi.PlatformSupportJava
 import java.io.File
@@ -21,19 +22,22 @@ internal class ApisGeneratorTest {
     @Test
     fun generatePaths() {
         val options = Options(
-            fileName = "C:\\projects\\rest-dto\\demo\\rest-dto\\users.yml",
+            fileName = "C:\\projects\\rest-dto\\demo\\openapi\\users.yml",
             modelPackageName = "org.some.models",
-            apiPackage = "org.some.api"
+            apiPackageName = "org.some.api",
+            generateApiDefintions = true
         )
 
         val openApi = Parser.parse(options.fileName)
-        val config = OpenApiGeneratorConfiguration()
+
+        val config = OpenApiGeneratorConfigurationBuilder()
+            .createConfig(options)
+
         val platformSupport = PlatformSupportJava()
 
-        apisGenerator.generateApis(
+       apisGenerator.generateApis(
             openApi,
             config,
-            options,
             platformSupport,
             dir
         )

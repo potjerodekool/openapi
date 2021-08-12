@@ -33,7 +33,7 @@ class JavaTypeConverter(private val types: TypesJava) : TypeConverter {
                 }
             }
             OpenApiType.STRING -> {
-                if (schemaFormat == "data") {
+                if (schemaFormat == "date") {
                     return DeclaredType(LocalDate::class.java.name)
                 } else if (schemaFormat == "uuid") {
                     return DeclaredType(UUID::class.java.name)

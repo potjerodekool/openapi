@@ -7,15 +7,14 @@ import org.platonos.rest.gen.openapi.OpenApiGeneratorConfiguration
 import org.platonos.rest.gen.openapi.Options
 import org.platonos.rest.gen.openapi.PlatformSupport
 
-interface ApiGenerator {
+interface ApiDefinitionGenerator {
 
     fun init(config: OpenApiGeneratorConfiguration,
-             options: Options,
              platformSupport: PlatformSupport,
              url: String,
              packageElement: PackageElement)
 
-    fun generate(url: String, path: Path)
+    fun generateApiDefinition(url: String, path: Path)
 
-    fun getTypeElement(): TypeElement
+    fun getApiDefinition(): TypeElement
 }

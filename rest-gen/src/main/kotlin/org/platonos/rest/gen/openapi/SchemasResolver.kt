@@ -56,9 +56,9 @@ class SchemasResolver(config: OpenApiGeneratorConfiguration) : OpenApiVisitor {
             return null
         }
 
-        val modelName = modelNamingStrategy.getModelName(schema)
+        val modelName = modelNamingStrategy.createModelName(schema)
 
-        if (modelName != null && schemas.containsKey(modelName).not()) {
+        if (schemas.containsKey(modelName).not()) {
             schemas[modelName] = schema
 
             schema.properties.values.forEach { propertySchema ->

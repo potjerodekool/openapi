@@ -1,3 +1,8 @@
 package org.platonos.rest.gen.expression
 
-abstract class Expression
+import org.platonos.rest.gen.TreeVisitor
+
+abstract class Expression {
+
+    abstract fun <P, R> accept(treeVisitor: TreeVisitor<P, R>, param: P): R
+}

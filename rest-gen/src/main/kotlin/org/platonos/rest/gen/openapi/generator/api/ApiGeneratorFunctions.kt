@@ -20,7 +20,12 @@ fun createJavaDoc(operation: Operation): JavaDoc {
             val parameterDescription = parameter.description ?: ""
 
             jdb.appendNewLine()
-            jdb.append("* @param ${parameter.name} $parameterDescription")
+            jdb.append("* @param ${parameter.name}")
+
+            if (parameter.description.isNullOrEmpty().not()) {
+                jdb.append(" $parameterDescription")
+            }
+
         }
 
         jdb.appendNewLine()

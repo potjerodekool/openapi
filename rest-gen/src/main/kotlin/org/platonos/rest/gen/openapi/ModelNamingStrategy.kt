@@ -4,5 +4,7 @@ import com.reprezen.kaizen.oasparser.model3.Schema
 
 interface ModelNamingStrategy {
 
-    fun getModelName(schema: Schema): String?
+    fun createModelName(schema: Schema): String
+
+    fun createPatchModelName(schema: Schema): String
 }

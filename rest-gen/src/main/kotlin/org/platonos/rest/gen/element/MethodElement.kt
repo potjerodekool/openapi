@@ -11,14 +11,9 @@ class MethodElement(methodBuilder: MethodBuilder): AbstractElement<MethodElement
     val parameters = methodBuilder.parameters
     val javaDoc: JavaDoc? = methodBuilder.javaDoc
 
-    val hasAbstractModifier: Boolean
+    val isAbstract: Boolean
     get() {
-        if (modifiers.contains(Modifier.ABSTRACT)) {
-            return true
-        } else {
-            val ee = enclosingElement
-            return if (ee != null) ee.kind == ElementKind.INTERFACE else false
-        }
+        return modifiers.contains(Modifier.ABSTRACT)
     }
 
     override fun <P, R> accept(visitor: TreeVisitor<P, R>, param: P): R {

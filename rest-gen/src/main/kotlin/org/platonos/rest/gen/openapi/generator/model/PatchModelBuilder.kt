@@ -1,15 +1,13 @@
 package org.platonos.rest.gen.openapi.generator.model
 
 import com.reprezen.kaizen.oasparser.model3.Schema
+import org.platonos.rest.gen.element.*
 import org.platonos.rest.gen.element.Annotation
-import org.platonos.rest.gen.element.Modifier
-import org.platonos.rest.gen.element.Operator
-import org.platonos.rest.gen.element.TypeElement
+import org.platonos.rest.gen.element.builder.AnnotationBuilder
 import org.platonos.rest.gen.element.builder.Builders
-import org.platonos.rest.gen.expression.FieldAccess
-import org.platonos.rest.gen.expression.MethodInvocation
-import org.platonos.rest.gen.expression.NameExpression
-import org.platonos.rest.gen.expression.OperatorExpression
+import org.platonos.rest.gen.element.builder.Builders.annotation
+import org.platonos.rest.gen.element.builder.Builders.methodInvocation
+import org.platonos.rest.gen.expression.*
 import org.platonos.rest.gen.openapi.OpenApiGeneratorConfiguration
 import org.platonos.rest.gen.openapi.PlatformSupport
 import org.platonos.rest.gen.statement.BlockStatement
@@ -26,16 +24,12 @@ class PatchModelBuilder(
 ) : AbstractModelBuilder(platformSupport, config, packageName, sourcePath) {
 
     override fun buildModel(modelName: String, schema: Schema): TypeElement {
-        return super.buildModel(createPatchModelName(modelName), schema)
-    }
-
-    private fun createPatchModelName(modelName: String): String {
-        return modelName + "PatchRequest"
+        val patchModelName = modelNamingStrategy.createPatchModelName(schema)
+        return super.buildModel(patchModelName, schema)
     }
 
     override fun getTypeDescriptor(schema: Schema): String {
-        val typeDescriptor = super.getTypeDescriptor(schema)
-        return createPatchModelName(typeDescriptor)
+        return modelNamingStrategy.createPatchModelName(schema)
     }
 
     override fun createType(schema: Schema): Type {
@@ -54,6 +48,18 @@ class PatchModelBuilder(
         return DeclaredType("org.openapitools.jackson.nullable.JsonNullable",  listOf(type))
     }
 
+    private fun createSchemaAnnotation(schema: Schema): Annotation {
+        val schemaAnnotation = annotation()
+            .withType(DeclaredType("io.swagger.v3.oas.annotations.media.Schema"))
+            .withAttribute(Attribute.of("type", schema.type))
+
+        if (schema.format != null) {
+            schemaAnnotation.withAttribute(Attribute.of("format", schema.format))
+        }
+
+        return schemaAnnotation.build()
+    }
+
     override fun visitProperty(propertyName: String, schema: Schema, param: Any?): Any? {
         val fieldType = createType(schema)
 
@@ -63,12 +69,16 @@ class PatchModelBuilder(
             .withModifier(Modifier.PRIVATE)
             .withAnnotation(
                 Annotation(DeclaredType("com.fasterxml.jackson.annotation.JsonProperty")).withValue(propertyName)
-            )
+            ).withAnnotation(createSchemaAnnotation(schema))
 
-        val methodInvocation = MethodInvocation(
-            NameExpression("org.openapitools.jackson.nullable.JsonNullable"),
-            "undefined"
-        )
+        val methodInvocation = methodInvocation()
+            .withSelect(
+                FieldAccess(
+                    IdentifierExpression("org.openapitools.jackson.nullable.JsonNullable"),
+                    IdentifierExpression("undefined")
+                )
+            )
+            .build()
 
         fieldBuilder.withValue(methodInvocation)
 
@@ -89,6 +99,7 @@ class PatchModelBuilder(
                               schema: Schema) {
 
         val setterBuilder = Builders.method()
+            .withModifier(Modifier.PUBLIC)
             .withSimpleName(name)
 
         setterBuilder.withParameter()
@@ -100,12 +111,12 @@ class PatchModelBuilder(
         val body = BlockStatement(
             ExpressionStatement(
                 OperatorExpression(
-                    FieldAccess(NameExpression("this"), NameExpression(name)),
+                    FieldAccess(IdentifierExpression("this"), IdentifierExpression(name)),
                     Operator.ASSING,
-                    NameExpression(name)
+                    IdentifierExpression(name)
                 )
             ),
-            ReturnStatement(NameExpression("this"))
+            ReturnStatement(IdentifierExpression("this"))
         )
 
         val returnType = DeclaredType("${packageName}.${typeElementBuilder.simpleName}")

@@ -1,0 +1,5 @@
+@Override
+public ResponseEntity<Void> create(User user,
+                                   final HttpServletRequest request) {
+    return ResponseEntity.created(ApiUtils.createLocation(request, usersService.create(user))).build();
+}

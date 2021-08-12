@@ -1,6 +1,8 @@
 package org.platonos.rest.gen.element.builder
 
 import org.platonos.rest.gen.element.ElementKind
+import org.platonos.rest.gen.expression.MethodInvocationBuilder
+import org.platonos.rest.gen.statement.VariableDeclarationBuilder
 
 object Builders {
 
@@ -24,5 +26,13 @@ object Builders {
 
     fun annotation(): AnnotationBuilder {
         return AnnotationBuilder()
+    }
+
+    fun methodInvocation(): MethodInvocationBuilder {
+        return MethodInvocationBuilder()
+    }
+
+    fun variableDeclaration(): VariableDeclarationBuilder {
+        return VariableDeclarationBuilder()
     }
 }

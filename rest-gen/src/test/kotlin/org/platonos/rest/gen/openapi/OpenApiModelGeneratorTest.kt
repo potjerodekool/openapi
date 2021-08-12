@@ -21,16 +21,15 @@ internal class OpenApiModelGeneratorTest {
 
         sourceDir.mkdirs()
 
-        val apiFileName = "C:\\projects\\rest-dto\\demo\\rest-dto\\users.yml"
+        val apiFileName = "C:\\projects\\rest-dto\\demo\\openapi\\users.yml"
         val build = Build(sourceDir, sourceDir)
         val options = Options(
-            apiFileName,
-            "org.some.models",
-            ""
+            fileName = apiFileName,
+            modelPackageName = "org.some.models",
+            dynamicModels = listOf("User")
         )
 
         generator.generate(options, build)
-        //generator.generate(apiFileName, "org.platonos.rest.test.models", build)
     }
 
     private fun deleteDir(dir: File) {

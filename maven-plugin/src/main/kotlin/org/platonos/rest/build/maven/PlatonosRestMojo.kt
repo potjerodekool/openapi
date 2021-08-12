@@ -19,13 +19,13 @@ class PlatonosRestMojo : AbstractMojo() {
     @Parameter(defaultValue = "\${project.build.directory}/generated-sources", required = true)
     private lateinit var generatedSourceDirectory: File
 
-    @Parameter(property = "model-package", required = false, defaultValue = "org.some.models")
-    private lateinit var modelPackage: String
+    @Parameter(property = "model-package", required = false)
+    private var modelPackage: String? = null
 
-    @Parameter(property = "api-package", required = false, defaultValue = "org.some.api")
-    private lateinit var apiPackage: String
+    @Parameter(property = "api-package", required = false)
+    private var apiPackageName: String? = null
 
-    @Parameter(property = "file", required = true)
+    @Parameter(property = "openApiFile", required = true)
     private var openApiFile: String = ""
 
     @Parameter(property = "generateModels", required = false, defaultValue = "true")
@@ -36,6 +36,9 @@ class PlatonosRestMojo : AbstractMojo() {
 
     @Parameter(property = "generateApiImplementations", required = false, defaultValue = "false")
     private var generateApiImplementations = false
+
+    @Parameter(property = "dynamicModels", required = false)
+    private var dynamicModels: String? = null
 
     override fun execute() {
         if (openApiFile.isEmpty()) {
@@ -53,16 +56,30 @@ class PlatonosRestMojo : AbstractMojo() {
         Logger.setLoggerFactory(MavenLoggerFactory(this))
 
         val generator = OpenApiGenerator()
+
         val options = Options(
             fileName = openApiFile,
             modelPackageName = modelPackage,
-            apiPackage = apiPackage,
+            apiPackageName = apiPackageName,
             generateModels = generateModels,
             generateApiDefintions = generateApiDefintions,
-            generateApiImplementations = generateApiImplementations
+            generateApiImplementations = generateApiImplementations,
+            dynamicModels = parseDynamicModels()
         )
 
         val build = Build(generatedSourceDirectory, generatedSourceDirectory)
         generator.generate(options, build)
+    }
+
+    private fun parseDynamicModels(): List<String> {
+        val dModels = dynamicModels
+
+        if (dModels == null) {
+            return emptyList()
+        } else {
+            return dModels.replace("\r", "")
+                .split("\n")
+                .toList()
+        }
     }
 }

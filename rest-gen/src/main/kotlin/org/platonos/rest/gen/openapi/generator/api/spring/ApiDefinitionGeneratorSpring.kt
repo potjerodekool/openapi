@@ -3,52 +3,42 @@ package org.platonos.rest.gen.openapi.generator.api.spring
 import com.reprezen.kaizen.oasparser.model3.Operation
 import com.reprezen.kaizen.oasparser.model3.Path
 import com.reprezen.kaizen.oasparser.model3.Schema
-import org.platonos.rest.gen.doc.JavaDoc
 import org.platonos.rest.gen.element.*
 import org.platonos.rest.gen.element.Annotation
+import org.platonos.rest.gen.element.builder.Builders
 import org.platonos.rest.gen.element.builder.Builders.annotation
 import org.platonos.rest.gen.element.builder.Builders.method
+import org.platonos.rest.gen.element.builder.Builders.methodInvocation
 import org.platonos.rest.gen.element.builder.Builders.parameter
-import org.platonos.rest.gen.element.builder.Builders.typeElement
+import org.platonos.rest.gen.expression.Expression
+import org.platonos.rest.gen.expression.FieldAccess
+import org.platonos.rest.gen.expression.IdentifierExpression
 import org.platonos.rest.gen.openapi.*
 import org.platonos.rest.gen.openapi.api.ContentType
-import org.platonos.rest.gen.openapi.generator.api.ApiGenerator
+import org.platonos.rest.gen.openapi.generator.api.ApiDefinitionGenerator
 import org.platonos.rest.gen.openapi.generator.api.createJavaDoc
+import org.platonos.rest.gen.statement.ReturnStatement
 import org.platonos.rest.gen.type.DeclaredType
 import org.platonos.rest.gen.type.Type
-import org.platonos.rest.gen.util.Functions.replaceFirstChar
-import java.lang.StringBuilder
 
-class ApiGeneratorSpring: ApiGenerator {
+class ApiDefinitionGeneratorSpring : ApiDefinitionGenerator, AbstractGenerator() {
 
-    private lateinit var modelNamingStrategy: ModelNamingStrategy
-    private lateinit var typeConverter: TypeConverter
+    private val apiBuilder = Builders.typeElement()
 
-    private lateinit var apiName: String
-    private lateinit var modelPackageName: String
+    override fun init(config: OpenApiGeneratorConfiguration,
+             platformSupport: PlatformSupport,
+             url: String,
+             packageElement: PackageElement) {
+        super.init(config, platformSupport, url, packageElement)
 
-    private val apiBuilder = typeElement()
-
-    override fun init(
-        config: OpenApiGeneratorConfiguration,
-        options: Options,
-        platformSupport: PlatformSupport,
-        url: String,
-        packageElement: PackageElement) {
-
-        modelNamingStrategy = config.modelNamingStrategy
-        typeConverter = platformSupport.getTypeConverter()
-
-
-        apiName = createApiName(url)
-        modelPackageName = options.modelPackageName
+        val apiName = createApiName(url)
 
         apiBuilder.withKind(ElementKind.INTERFACE)
         apiBuilder.withSimpleName(apiName)
         apiBuilder.withEnclosingElement(packageElement)
     }
 
-    override fun generate(url: String, path: Path) {
+    override fun generateApiDefinition(url: String, path: Path) {
         if (path.post != null) {
             generatePostMethod(url, path.post)
         }
@@ -70,13 +60,34 @@ class ApiGeneratorSpring: ApiGenerator {
         }
     }
 
-    override fun getTypeElement(): TypeElement {
+    override fun getApiDefinition(): TypeElement {
         return apiBuilder.build()
     }
 
-    private fun createApiName(url: String): String {
-        val start = url.lastIndexOf('/') + 1
-        return url.substring(start).replaceFirstChar { it.uppercaseChar() } + "Api"
+    private fun generatePostMethod(url: String, post: Operation) {
+        val returnType = createReturnType(post, "201")
+
+        val requestMappingAnnotation = annotation()
+            .withType(DeclaredType("org.springframework.web.bind.annotation.PostMapping"))
+            .withValue(url)
+            .withAttribute(createConsumesAttribute(post))
+            .withAttribute(createProducesAttribute(post))
+            .build()
+
+        val javaDoc = createJavaDoc(post)
+
+        val method = method()
+            .withJavaDoc(javaDoc)
+            .withAnnotation(requestMappingAnnotation)
+            .withAnnotation(createOperationAnnotation(post))
+            .withModifier(Modifier.DEFAULT)
+            .withReturnType(returnType)
+            .withSimpleName("create")
+            .withParameter(createBodyParameter(post).build())
+            .withParameter(createHttpServletRequestParameter().build())
+            .withBody(ReturnStatement(responseEntityNotFound()))
+
+        apiBuilder.withEnclosedElement(method.build())
     }
 
     private fun generateGetMethod(url: String, get: Operation) {
@@ -85,6 +96,8 @@ class ApiGeneratorSpring: ApiGenerator {
         val requestMappingAnnotation = annotation()
             .withType(DeclaredType("org.springframework.web.bind.annotation.GetMapping"))
             .withValue(url)
+            .withAttribute(createConsumesAttribute(get))
+            .withAttribute(createProducesAttribute(get))
             .build()
 
         get.parameters.forEach { uriParameter ->
@@ -95,7 +108,7 @@ class ApiGeneratorSpring: ApiGenerator {
                     val pathVariableMissing = !(url.startsWith("{$name}") || url.contains("{$name}"))
 
                     if (pathVariableMissing) {
-                        throw OpenApiException("url $url doens't contain pathvariable $name")
+                        throw OpenApiException("url $url doesn't contain path variable $name")
                     }
                     DeclaredType("org.springframework.web.bind.annotation.PathVariable")
                 }
@@ -142,41 +155,22 @@ class ApiGeneratorSpring: ApiGenerator {
             )
         }
 
+        parameters.add(createHttpServletRequestParameter().build())
+
         val javaDoc = createJavaDoc(get)
 
         val method = method()
             .withJavaDoc(javaDoc)
             .withAnnotation(requestMappingAnnotation)
+            .withAnnotation(createOperationAnnotation(get))
+            .withModifier(Modifier.DEFAULT)
             .withReturnType(returnType)
             .withSimpleName("get")
             .withParameters(parameters)
+            .withBody(ReturnStatement(responseEntityNotFound()))
             .build()
 
         apiBuilder.withEnclosedElement(method)
-    }
-
-    private fun generatePostMethod(url: String, post: Operation) {
-        val bodyParameter = createBodyParameter(post)
-        val returnType = createReturnType(post, "201")
-
-        val requestMappingAnnotation = annotation()
-            .withType(DeclaredType("org.springframework.web.bind.annotation.PostMapping"))
-            .withValue(url)
-            .build()
-
-        val javaDoc = createJavaDoc(post)
-
-        val method = method()
-            .withJavaDoc(javaDoc)
-            .withAnnotation(requestMappingAnnotation)
-            .withReturnType(returnType)
-            .withSimpleName("create")
-
-        if (bodyParameter != null) {
-            method.withParameter(bodyParameter)
-        }
-
-        apiBuilder.withEnclosedElement(method.build())
     }
 
     private fun generatePutMethod(url: String, put: Operation) {
@@ -185,16 +179,17 @@ class ApiGeneratorSpring: ApiGenerator {
         val requestMappingAnnotation = annotation()
             .withType(DeclaredType("org.springframework.web.bind.annotation.PutMapping"))
             .withValue(url)
+            .withAttribute(createConsumesAttribute(put))
+            .withAttribute(createProducesAttribute(put))
             .build()
 
         val paramAnnotation = annotation()
-            .withType(DeclaredType("org.springframework.web.bind.annotation.RequestBody"),)
+            .withType(DeclaredType("org.springframework.web.bind.annotation.RequestBody"))
 
         if (bodyRequired) {
             paramAnnotation.withAttribute(Attribute.of("required", bodyRequired))
         }
 
-        val bodyParameter = createBodyParameter(put)
         val returnType = createReturnType(put, "200")
 
         val javaDoc = createJavaDoc(put)
@@ -202,23 +197,26 @@ class ApiGeneratorSpring: ApiGenerator {
         val method = method()
             .withJavaDoc(javaDoc)
             .withAnnotation(requestMappingAnnotation)
+            .withAnnotation(createOperationAnnotation(put))
+            .withModifier(Modifier.DEFAULT)
             .withReturnType(returnType)
             .withSimpleName("put")
+            .withParameter(createBodyParameter(put).build())
+            .withParameter(createHttpServletRequestParameter().build())
+            .withBody(ReturnStatement(responseEntityNotFound()))
+            .build()
 
-        if (bodyParameter != null) {
-            method.withParameter(bodyParameter)
-        }
-
-        apiBuilder.withEnclosedElement(method.build())
+        apiBuilder.withEnclosedElement(method)
     }
 
     private fun generatePatchMethod(url: String, patch: Operation) {
         val returnType = createReturnType(patch, "200")
-        val bodyParameter = createBodyParameter(patch, true)
 
         val requestMappingAnnotation = annotation()
             .withType(DeclaredType("org.springframework.web.bind.annotation.PatchMapping"))
             .withValue(url)
+            .withAttribute(createConsumesAttribute(patch))
+            .withAttribute(createProducesAttribute(patch))
             .build()
 
         val javaDoc = createJavaDoc(patch)
@@ -226,23 +224,26 @@ class ApiGeneratorSpring: ApiGenerator {
         val method = method()
             .withJavaDoc(javaDoc)
             .withAnnotation(requestMappingAnnotation)
+            .withAnnotation(createOperationAnnotation(patch))
+            .withModifier(Modifier.DEFAULT)
             .withReturnType(returnType)
             .withSimpleName("patch")
+            .withParameter(createBodyParameter(patch, true).build())
+            .withParameter(createHttpServletRequestParameter().build())
+            .withBody(ReturnStatement(responseEntityNotFound()))
+            .build()
 
-        if (bodyParameter != null) {
-            method.withParameter(bodyParameter)
-        }
-
-        apiBuilder.withEnclosedElement(method.build())
+        apiBuilder.withEnclosedElement(method)
     }
 
     private fun generateDeleteMethod(url: String, delete: Operation) {
         val returnType = createReturnType(delete, "200")
-        val bodyParameter = createBodyParameter(delete)
 
         val requestMappingAnnotation = annotation()
             .withType(DeclaredType("org.springframework.web.bind.annotation.DeleteMapping"))
             .withValue(url)
+            .withAttribute(createConsumesAttribute(delete))
+            .withAttribute(createProducesAttribute(delete))
             .build()
 
         val javaDoc = createJavaDoc(delete)
@@ -250,12 +251,17 @@ class ApiGeneratorSpring: ApiGenerator {
         val method = method()
             .withJavaDoc(javaDoc)
             .withAnnotation(requestMappingAnnotation)
+            .withAnnotation(createOperationAnnotation(delete))
+            .withModifier(Modifier.DEFAULT)
             .withReturnType(returnType)
             .withSimpleName("delete")
 
-        if (bodyParameter != null) {
-            method.withParameter(bodyParameter)
+        if (delete.requestBody != null) {
+            method.withParameter(createBodyParameter(delete).build())
         }
+
+        method.withParameter(createHttpServletRequestParameter().build())
+        method.withBody(ReturnStatement(responseEntityNotFound()))
 
         apiBuilder.withEnclosedElement(method.build())
     }
@@ -268,17 +274,11 @@ class ApiGeneratorSpring: ApiGenerator {
             returnType = DeclaredType("java.lang.Void")
         } else {
             val schema = contentMediaType.schema
-            val modelSchema: Schema
             val isArray = schema.type == "array"
-
-            if (isArray) {
-                modelSchema = schema.itemsSchema
-            } else {
-                modelSchema = schema
-            }
+            val modelSchema: Schema = if (isArray) schema.itemsSchema else schema
 
             if (modelSchema.getCreatingRef() != null) {
-                val modelName = modelNamingStrategy.getModelName(modelSchema)!!
+                val modelName = modelNamingStrategy.createModelName(modelSchema)
                 val qualifiedModelName = "${modelPackageName}.$modelName"
                 returnType = DeclaredType(qualifiedModelName)
             } else {
@@ -299,53 +299,53 @@ class ApiGeneratorSpring: ApiGenerator {
         return DeclaredType("org.springframework.http.ResponseEntity", listOf(returnType))
     }
 
-    private fun createBodyParameter(operation: Operation, isPatch: Boolean = false): VariableElement? {
-        val requestBody = operation.requestBody
-
-        if (requestBody == null) {
-            return null
-        }
-
-        val bodyRequired = requestBody.required
-
-        val paramAnnotation = annotation()
-            .withType(DeclaredType("org.springframework.web.bind.annotation.RequestBody"),)
-
-        if (bodyRequired) {
-            paramAnnotation.withAttribute(Attribute.of("required", bodyRequired))
-        }
-
-        val contentMediaType = operation.requestBody.getContentMediaType(ContentType.APPLICATION_JSON.descriptor)
-        val schema = contentMediaType.schema
-
-        val modelName: String
-        val bodyType: DeclaredType
-
-        if (schema.getCreatingRef() != null) {
-            modelName = modelNamingStrategy.getModelName(schema)!!
-            val qualifiedModelName = "${modelPackageName}.$modelName"
-
-            val bodyTypeName = if (isPatch) qualifiedModelName + "PatchRequest" else qualifiedModelName
-            bodyType = DeclaredType(bodyTypeName)
-        } else {
-            modelName = "body"
-            bodyType = DeclaredType(
-                "java.util.Map",
-                listOf(
-                    DeclaredType("java.lang.String"),
-                    DeclaredType("java.lang.Object")
+    private fun responseEntityNotFound(): Expression {
+        val notFoundInvocation = methodInvocation()
+            .withSelect(
+                FieldAccess(
+                    IdentifierExpression("org.springframework.http.ResponseEntity", DeclaredType("org.springframework.http.ResponseEntity")),
+                    IdentifierExpression("notFound")
                 )
-            )
+            ).build()
+
+        return methodInvocation()
+            .withSelect(
+                FieldAccess(
+                    notFoundInvocation,
+                    IdentifierExpression("build")
+                )
+            ).build()
+    }
+
+    private fun createConsumesAttribute(operation: Operation): Attribute {
+        val contentMediaTypes = operation.requestBody.contentMediaTypes.keys
+            .toList()
+        return Attribute.of("consumes", contentMediaTypes)
+    }
+
+    private fun createProducesAttribute(operation: Operation): Attribute {
+        if (operation.responses != null) {
+            val contentMediaTypes = operation.responses
+                .map { response -> response.value.contentMediaTypes }
+                .map { contentMediaTypes -> contentMediaTypes.keys }
+                .flatten()
+                .distinct()
+
+            return Attribute.of("produces", contentMediaTypes)
         }
 
-        val bodyParamName = modelName.lowercase()
+        return Attribute.of("produces", emptyList<String>())
+    }
 
-        return parameter()
-            .withAnnotation(paramAnnotation.build())
-            .withModifier(Modifier.FINAL)
-            .withType(bodyType)
-            .withSimpleName(bodyParamName)
-            .build()
+    private fun createOperationAnnotation(operation: Operation): Annotation {
+        val operationAnnotation = annotation()
+            .withType(DeclaredType("io.swagger.v3.oas.annotations.Operation"))
+
+        if (operation.operationId != null) {
+            operationAnnotation.withAttribute(Attribute.of("operationId", operation.operationId))
+        }
+
+        return operationAnnotation.build()
     }
 
 }

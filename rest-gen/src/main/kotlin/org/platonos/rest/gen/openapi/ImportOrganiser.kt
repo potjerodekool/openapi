@@ -3,9 +3,13 @@ package org.platonos.rest.gen.openapi
 import org.platonos.rest.gen.TreeVisitor
 import org.platonos.rest.gen.element.*
 import org.platonos.rest.gen.element.Annotation
+import org.platonos.rest.gen.element.builder.Builders.methodInvocation
+import org.platonos.rest.gen.element.builder.Builders.variableDeclaration
+import org.platonos.rest.gen.expression.*
+import org.platonos.rest.gen.statement.*
 import org.platonos.rest.gen.type.*
 
-class ImportOrganiser : TreeVisitor<Any?,Any?> {
+class ImportOrganiser : TreeVisitor<Any?,Any> {
 
     private val imports = mutableListOf<Import>()
     private val importedClasses = mutableSetOf<String>()
@@ -17,7 +21,7 @@ class ImportOrganiser : TreeVisitor<Any?,Any?> {
         return compilationUnit!!
     }
 
-    override fun visitCompilationUnit(compilationUnit: CompilationUnit, param: Any?): Any? {
+    override fun visitCompilationUnit(compilationUnit: CompilationUnit, param: Any?): Any {
         packageName = compilationUnit.packageElement.packageName
 
         val newTypeElement = compilationUnit.typeElement.accept(this, param) as TypeElement
@@ -28,11 +32,11 @@ class ImportOrganiser : TreeVisitor<Any?,Any?> {
             imports
         )
 
-        return null
+        return compilationUnit
     }
 
-    override fun visitPackage(packageElement: PackageElement, param: Any?): Any? {
-        return null
+    override fun visitPackage(packageElement: PackageElement, param: Any?): Any {
+        return packageElement
     }
 
     override fun visitTypeElement(typeElement: TypeElement, param: Any?): Any {
@@ -67,12 +71,15 @@ class ImportOrganiser : TreeVisitor<Any?,Any?> {
 
         val newReturnType = methodElement.returnType.accept(this, param) as Type
 
+        val newBody = methodElement.body.accept(this, param) as Statement
+
         return methodElement.builder()
             .withoutAnnotations()
             .withAnnotations(newAnnotations)
             .withoutParameters()
             .withParameters(newParameters)
             .withReturnType(newReturnType)
+            .withBody(newBody)
             .build()
     }
 
@@ -98,23 +105,30 @@ class ImportOrganiser : TreeVisitor<Any?,Any?> {
             val qualifiedName = declaredType.getQualifiedName()
 
             if (qualifiedName.startsWith("java.lang.") || isInSamePackage(qualifiedName)) {
-                return DeclaredType(getSimpleName(qualifiedName), newTypeArgs)
+                return DeclaredType(qualifiedToSimpleName(qualifiedName), newTypeArgs)
             } else {
-                if (shouldImport(qualifiedName)) {
-                    imports += Import(qualifiedName)
-                    importedClasses.add(qualifiedName)
-                }
-                return DeclaredType(getSimpleName(qualifiedName), newTypeArgs)
+                importClassIfNeeded(qualifiedName)
+                return DeclaredType(qualifiedToSimpleName(qualifiedName), newTypeArgs)
             }
         }
     }
 
-    private fun getSimpleName(qualifiedName: String): String {
+    private fun importClassIfNeeded(className: String) {
+        if (shouldImport(className)) {
+            imports += Import(className)
+            importedClasses.add(className)
+        }
+    }
+
+    private fun qualifiedToSimpleName(qualifiedName: String): String {
         val sepIndex = qualifiedName.lastIndexOf('.')
         return if (sepIndex < 0) qualifiedName else qualifiedName.substring(sepIndex + 1)
     }
 
     private fun shouldImport(className: String): Boolean {
+        if (className.startsWith("java.lang.") || isInSamePackage(className)) {
+            return false
+        }
         return importedClasses.contains(className).not()
     }
 
@@ -150,5 +164,74 @@ class ImportOrganiser : TreeVisitor<Any?,Any?> {
     override fun visitEnumAttributeValue(enumAttributeValue: EnumAttributeValue, param: Any?): Any {
         val newType = enumAttributeValue.type.accept(this, param) as DeclaredType
         return EnumAttributeValue(newType, enumAttributeValue.enumConstant)
+    }
+
+    override fun visitBlockStatement(blockStatement: BlockStatement, param: Any?): Any {
+        val newStatements = blockStatement.statements
+            .map { statement -> statement.accept(this, param) as Statement }
+        return BlockStatement(newStatements)
+    }
+
+    override fun visitExpressionStatement(expressionStatement: ExpressionStatement, param: Any?): Any {
+        val newExpression = expressionStatement.expression.accept(this, param) as Expression
+        return ExpressionStatement(newExpression)
+    }
+
+    override fun visitReturnStatement(returnStatement: ReturnStatement, param: Any?): Any {
+        val newExpression = returnStatement.expression.accept(this, param) as Expression
+        return ReturnStatement(newExpression)
+    }
+
+    override fun visitVariableDeclation(variableDeclaration: VariableDeclaration, param: Any?): Any {
+        val newInit = variableDeclaration.init?.accept(this, param) as Expression?
+        return variableDeclaration()
+            .withModifiers(variableDeclaration.modifiers)
+            .withType(variableDeclaration.type)
+            .withName(variableDeclaration.name)
+            .withInit(newInit)
+            .build()
+    }
+
+    override fun visitFieldAccess(fieldAccess: FieldAccess, param: Any?): Any {
+        val newTarget = fieldAccess.target?.accept(this, param) as Expression?
+        val newFieldExpression = fieldAccess.fieldExpression.accept(this, param) as Expression
+        return FieldAccess(newTarget, newFieldExpression)
+    }
+
+    override fun visitIdentifierExpression(identifierExpression: IdentifierExpression, param: Any?): Any {
+        if (identifierExpression.type == null) {
+            return identifierExpression
+        } else {
+            val className = identifierExpression.name
+            importClassIfNeeded(className)
+            val simpleName = qualifiedToSimpleName(className)
+
+            return IdentifierExpression(
+                simpleName,
+                identifierExpression.type
+            )
+        }
+    }
+
+    override fun visitMethodInvocation(methodInvocation: MethodInvocation, param: Any?): Any {
+        val newMethodSelect = methodInvocation.methodSelect?.accept(this, param) as Expression?
+        val newTypeArgs = methodInvocation.typeArgs.map { typeArg -> typeArg.accept(this, param) as Type }
+        val newParameters = methodInvocation.parameters.map { parameter -> parameter.accept(this, param) as Expression }
+
+        return methodInvocation()
+            .withSelect(newMethodSelect)
+            .withTypeArgs(newTypeArgs)
+            .withParameters(newParameters)
+            .build()
+    }
+
+    override fun visitOperatorExpression(operatorExpression: OperatorExpression, param: Any?): Any {
+        val newLeft = operatorExpression.left.accept(this, param) as Expression
+        val newRight = operatorExpression.right.accept(this, param) as Expression
+        return OperatorExpression(newLeft, operatorExpression.operator, newRight)
+    }
+
+    override fun visitArrayAttributeValue(arrayAttributeValue: ArrayAttributeValue, param: Any?): Any {
+        return arrayAttributeValue
     }
 }

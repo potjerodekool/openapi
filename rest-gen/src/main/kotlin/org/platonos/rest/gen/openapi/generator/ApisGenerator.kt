@@ -1,17 +1,18 @@
 package org.platonos.rest.gen.openapi.generator
 
+import com.google.googlejavaformat.java.Formatter
 import com.reprezen.kaizen.oasparser.model3.OpenApi3
 import org.platonos.rest.gen.Templates
 import org.platonos.rest.gen.element.CompilationUnit
-import org.platonos.rest.gen.element.ElementKind
-import org.platonos.rest.gen.element.MethodElement
 import org.platonos.rest.gen.element.PackageElement
 import org.platonos.rest.gen.openapi.*
-import org.platonos.rest.gen.openapi.generator.api.ApiGenerator
+import org.platonos.rest.gen.openapi.generator.api.ApiDefinitionGenerator
 import org.platonos.rest.gen.openapi.generator.api.ApiGeneratorFactory
+import org.platonos.rest.gen.openapi.generator.api.ApiImplementationGenerator
 import org.platonos.rest.gen.util.LogLevel
 import org.platonos.rest.gen.util.Logger
 import java.io.File
+import java.util.*
 
 class ApisGenerator {
 
@@ -20,63 +21,120 @@ class ApisGenerator {
     fun generateApis(
         openApi: OpenApi3,
         config: OpenApiGeneratorConfiguration,
-        options: Options,
         platformSupport: PlatformSupport,
         sourceDir: File
     ) {
-        val packageElement = PackageElement(options.apiPackage)
+        val packageElement = PackageElement(config.apiPackageName)
+        generateApiDefinitions(openApi, config, platformSupport, sourceDir, packageElement)
+        generateApiImplementations(openApi, config, platformSupport, sourceDir, packageElement)
+        generateUtils(config, sourceDir)
+    }
 
-        val apiGenerators = mutableMapOf<String, ApiGenerator>()
+    private fun generateApiDefinitions(openApi: OpenApi3,
+                                       config: OpenApiGeneratorConfiguration,
+                                       platformSupport: PlatformSupport,
+                                       sourceDir: File,
+                                       packageElement: PackageElement) {
+        val apiDefinitionGenerators = mutableMapOf<String, ApiDefinitionGenerator>()
 
-        openApi.paths.forEach { (url, path) ->
-            val controllerKey = createControllerKey(url)
+        if (config.generateApiDefintions) {
+            openApi.paths.forEach { (url, path) ->
+                val controllerKey = createControllerKey(url)
 
-            val generator = apiGenerators.computeIfAbsent(controllerKey) {
-                val newGenerator = ApiGeneratorFactory.createGenerator(options.generator)
-                newGenerator.init(config, options,platformSupport, controllerKey, packageElement)
-                newGenerator
+                val generator = apiDefinitionGenerators.computeIfAbsent(controllerKey) {
+                    val newGenerator = ApiGeneratorFactory.createApiDefinitionGenerator(config.generator)
+                    newGenerator.init(config, platformSupport, controllerKey, packageElement)
+                    newGenerator
+                }
+
+                if (path != null) {
+                    generator.generateApiDefinition(url, path)
+                }
             }
 
-            if (path != null) {
-                generator.generate(url, path)
+            apiDefinitionGenerators.values.forEach { apiGenerator ->
+                val apiDefinition = apiGenerator.getApiDefinition()
+                val importOrganiser = ImportOrganiser()
+                CompilationUnit(packageElement, apiDefinition).accept(importOrganiser, null)
+                generateCode(importOrganiser.getCompilationUnit(), sourceDir, platformSupport)
             }
         }
+    }
 
-        apiGenerators.values.forEach { apiGenerator ->
-            val typeElement = apiGenerator.getTypeElement()
-            val importOrganiser = ImportOrganiser()
-            CompilationUnit(packageElement, typeElement).accept(importOrganiser, null)
-            generateCode(importOrganiser.getCompilationUnit(), sourceDir, platformSupport)
+
+    private fun generateApiImplementations(
+        openApi: OpenApi3,
+        config: OpenApiGeneratorConfiguration,
+        platformSupport: PlatformSupport,
+        sourceDir: File,
+        packageElement: PackageElement
+    ) {
+        val apiImplementationGenerators = mutableMapOf<String, ApiImplementationGenerator>()
+
+        if (config.generateApiImplementations) {
+            openApi.paths.forEach { (url, path) ->
+                val controllerKey = createControllerKey(url)
+
+                val generator = apiImplementationGenerators.computeIfAbsent(controllerKey) {
+                    val newGenerator = ApiGeneratorFactory.createApiImplementationGenerator(config.generator)
+                    newGenerator.init(config, platformSupport, controllerKey, packageElement)
+                    newGenerator
+                }
+
+                if (path != null) {
+                    generator.generateApiImplementation(url, path)
+                }
+            }
+
+            apiImplementationGenerators.values.forEach { apiGenerator ->
+                val apiImplementation = apiGenerator.getApiImplementation()
+                val importOrganiser = ImportOrganiser()
+                CompilationUnit(packageElement, apiImplementation).accept(importOrganiser, null)
+                generateCode(importOrganiser.getCompilationUnit(), sourceDir, platformSupport)
+            }
         }
-
     }
 
     private fun createControllerKey(url: String): String {
-        val key = StringBuilder()
+        val key = StringJoiner("/")
         val parts = url.split("/")
-        var index = 0
-        var process = true
+        var index = parts.size - 1
+        var stopIndex = -1
 
         do {
             val part = parts[index]
 
-            if (part == "") {
-                key.append("/")
-            } else if (part.startsWith("{")) {
-                process = false
-            } else {
-                key.append(part)
+            if (stopIndex == -1) {
+                if (isPathVariable(part).not()) {
+                    stopIndex = index
+                }
+            }
+            index--
+        } while (index > 0)
+
+        index = 0
+
+        do {
+            val part = parts[index]
+
+            if (isPathVariable(part).not() && part.isNotEmpty()) {
+                key.add(part)
             }
             index++
-        } while (index < parts.size && process)
+        } while (index <= stopIndex)
 
         return key.toString()
+    }
+
+    private fun isPathVariable(pathElement: String): Boolean {
+        return pathElement.startsWith("{")
     }
 
     private fun generateCode(compilationUnit: CompilationUnit, sourceDir: File, platformSupport: PlatformSupport) {
         val template = Templates.getInstanceOf("class/compilationUnit")!!
         template.add("compilationUnit", compilationUnit)
         val code = template.render()
+        val formattedCode = Formatter().formatSource(code)
 
         val packageName = compilationUnit.packageElement.getQualifiedName()
 
@@ -85,9 +143,23 @@ class ApisGenerator {
             packageName,
             compilationUnit.typeElement.simpleName,
             platformSupport.getSourceFileExtension(),
-            code)
+            formattedCode)
 
         logger.log(LogLevel.INFO, "Generated source file ${outputFile.absoluteFile}")
+    }
+
+    private fun generateUtils(config: OpenApiGeneratorConfiguration, sourceDir: File) {
+
+        val generator = ApiGeneratorFactory.createUtilsGenerator(config.generator)
+        val utilsCode = generator.generateUtils(config.apiPackageName)
+
+        FileWriter.write(
+            sourceDir,
+            config.apiPackageName,
+            "ApiUtils",
+            "java",
+            utilsCode
+        )
     }
 
 }

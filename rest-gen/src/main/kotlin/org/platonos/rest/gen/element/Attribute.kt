@@ -1,4 +1,4 @@
-package org.platonos.rest.gen.element;
+package org.platonos.rest.gen.element
 
 import org.platonos.rest.gen.TreeVisitor
 
@@ -20,6 +20,20 @@ class Attribute private constructor(val name: String, val value: AttributeValue)
 
         fun of(key: String, value: AttributeValue): Attribute {
             return Attribute(key, value)
+        }
+
+        fun of(key: String, value: List<*>): Attribute {
+            val values = value.map { toAttributeValue(it as Any) }
+            return of(key, ArrayAttributeValue(values))
+        }
+
+        private fun toAttributeValue(value: Any): AttributeValue {
+            return when(value) {
+                is String -> ConstantAttributeValue(quote(value))
+                is Boolean,
+                is Int -> ConstantAttributeValue(value)
+                else -> TODO()
+            }
         }
 
         private fun quote(s: String): String {

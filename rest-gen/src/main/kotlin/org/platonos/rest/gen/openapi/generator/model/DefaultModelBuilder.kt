@@ -6,7 +6,7 @@ import org.platonos.rest.gen.element.Annotation
 import org.platonos.rest.gen.element.builder.Builders
 
 import org.platonos.rest.gen.expression.FieldAccess
-import org.platonos.rest.gen.expression.NameExpression
+import org.platonos.rest.gen.expression.IdentifierExpression
 import org.platonos.rest.gen.expression.OperatorExpression
 import org.platonos.rest.gen.openapi.OpenApiGeneratorConfiguration
 import org.platonos.rest.gen.openapi.PlatformSupport
@@ -66,6 +66,7 @@ open class DefaultModelBuilder(
                          schema: Schema) {
 
         val setterBuilder = Builders.method()
+            .withModifier(Modifier.PUBLIC)
             .withSimpleName(name)
 
         setterBuilder.withParameter()
@@ -79,12 +80,12 @@ open class DefaultModelBuilder(
         val body = BlockStatement(
             ExpressionStatement(
                 OperatorExpression(
-                    FieldAccess(NameExpression("this"), NameExpression(name)),
+                    FieldAccess(IdentifierExpression("this"), IdentifierExpression(name)),
                     Operator.ASSING,
-                    NameExpression(name)
+                    IdentifierExpression(name)
                 )
             ),
-            ReturnStatement(NameExpression("this"))
+            ReturnStatement(IdentifierExpression("this"))
         )
 
         val setter = setterBuilder
