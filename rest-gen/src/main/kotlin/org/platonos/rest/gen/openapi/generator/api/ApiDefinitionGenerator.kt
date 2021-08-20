@@ -6,15 +6,17 @@ import org.platonos.rest.gen.element.TypeElement
 import org.platonos.rest.gen.openapi.OpenApiGeneratorConfiguration
 import org.platonos.rest.gen.openapi.Options
 import org.platonos.rest.gen.openapi.PlatformSupport
+import org.platonos.rest.gen.openapi.generator.Filer
 
 interface ApiDefinitionGenerator {
 
     fun init(config: OpenApiGeneratorConfiguration,
              platformSupport: PlatformSupport,
              url: String,
-             packageElement: PackageElement)
+             packageElement: PackageElement,
+             filer: Filer)
 
-    fun generateApiDefinition(url: String, path: Path)
+    fun generate(url: String, path: Path)
 
-    fun getApiDefinition(): TypeElement
+    fun finish()
 }

@@ -2,7 +2,7 @@ package org.platonos.rest.gen.element
 
 import org.platonos.rest.gen.TreeVisitor
 
-class ArrayAttributeValue(val values: List<AttributeValue>): AttributeValue {
+class ArrayAttributeValue(val values: List<AttributeValue> = emptyList()): AttributeValue {
 
     override fun toString(): String {
         return values.joinToString(prefix = "{", separator = "," , postfix = "}")

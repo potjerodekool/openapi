@@ -11,13 +11,18 @@ class MethodElement(methodBuilder: MethodBuilder): AbstractElement<MethodElement
     val parameters = methodBuilder.parameters
     val javaDoc: JavaDoc? = methodBuilder.javaDoc
 
-    val isAbstract: Boolean
+    val abstract: Boolean
     get() {
-        return modifiers.contains(Modifier.ABSTRACT)
+        return modifiers.contains(Modifier.ABSTRACT) || body == null
     }
 
-    override fun <P, R> accept(visitor: TreeVisitor<P, R>, param: P): R {
-        return visitor.visitMethod(this, param)
+    val constructor: Boolean
+    get() {
+        return kind == ElementKind.CONSTRUCTOR
+    }
+
+    override fun <P, R> accept(treeVisitor: TreeVisitor<P, R>, param: P): R {
+        return treeVisitor.visitMethod(this, param)
     }
 
     fun builder(): MethodBuilder {
@@ -25,6 +30,10 @@ class MethodElement(methodBuilder: MethodBuilder): AbstractElement<MethodElement
     }
 
     override fun toString(): String {
-        return "$returnType $simpleName(${parameters.joinToString()})"
+        if (constructor) {
+            return "$simpleName(${parameters.joinToString()})"
+        } else {
+            return "$returnType $simpleName(${parameters.joinToString()})"
+        }
     }
 }

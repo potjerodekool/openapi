@@ -10,38 +10,56 @@ interface OpenApiVisitor {
             visitSchema(name, schema)
         }
 
-        openApi.paths.forEach { (pathValue, path) ->
-            visitPath(pathValue, path)
+        openApi.paths.forEach { (requestPath, path) ->
+            visitPath(requestPath, path)
         }
     }
 
     fun visitSchema(name: String?, schema: Schema) {
     }
 
-    fun visitPath(pathValue: String, path: Path) {
-        visitOperation(HttpMethod.POST, path.post)
-        visitOperation(HttpMethod.GET, path.get)
-        visitOperation(HttpMethod.PUT, path.put)
-        visitOperation(HttpMethod.PATCH, path.patch)
-        visitOperation(HttpMethod.DELETE, path.delete)
-
-    }
-
-    fun visitOperation(method: HttpMethod, operation: Operation?) {
-        if (operation == null) {
-            return
+    fun visitPath(requestPath: String, path: Path) {
+        if (path.post != null) {
+            visitOperation(HttpMethod.POST, requestPath, path.post)
         }
 
-        visitRequestBody(method, operation, operation.requestBody)
+        if (path.get != null) {
+            visitOperation(HttpMethod.GET, requestPath, path.get)
+        }
 
-        operation.responses.forEach { responseCode, response ->
-            visitResponse(method, operation, responseCode, response)
+        if (path.put != null) {
+            visitOperation(HttpMethod.PUT, requestPath, path.put)
+        }
+
+        if (path.patch != null) {
+            visitOperation(HttpMethod.PATCH, requestPath, path.patch)
+        }
+
+        if (path.delete != null) {
+            visitOperation(HttpMethod.DELETE, requestPath, path.delete)
         }
     }
 
-    fun visitRequestBody(method: HttpMethod, operation: Operation, requestBody: RequestBody) {
+    fun visitOperation(method: HttpMethod,
+                       requestPath: String,
+                       operation: Operation) {
+        visitRequestBody(method, requestPath, operation, operation.requestBody)
+
+        operation.responses.forEach { (responseCode, response) ->
+            visitResponse(method, requestPath, operation, responseCode, response)
+        }
     }
 
-    fun visitResponse(method: HttpMethod, operation: Operation, responseCode: String, response: Response) {
+    fun visitRequestBody(method: HttpMethod,
+                         requestPath: String,
+                         operation: Operation,
+                         requestBody: RequestBody) {
+    }
+
+    fun visitResponse(method: HttpMethod,
+                      requestPath: String,
+                      operation: Operation,
+                      responseCode: String,
+                      response: Response) {
     }
 }

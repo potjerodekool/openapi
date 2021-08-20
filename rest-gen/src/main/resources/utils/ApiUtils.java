@@ -9,7 +9,7 @@ public final class ApiUtils {
     private ApiUtils() {
     }
 
-    public static URI createLocation(HttpServletRequest request, Object id) {
+    public static URI createLocation(final HttpServletRequest request, final Object id) {
         final StringBuffer location = request.getRequestURL();
 
         if (location.charAt(location.length() -1) != '/') {

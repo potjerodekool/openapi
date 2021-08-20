@@ -1,0 +1,96 @@
+{
+  "provider" : {
+    "name" : "usersService"
+  },
+  "interactions" : [ {
+    "description" : "Creates a new user.",
+    "request" : {
+      "method" : "POST",
+      "path" : "/users",
+      "body" : {
+        "name" : "test",
+        "birthDate" : "1970-01-01"
+      }
+    },
+    "response" : {
+      "status" : "201",
+      "headers" : {
+        "location" : "http://localhost:8080/users/1"
+      }
+    }
+  }, {
+    "description" : "Returns a list of users.",
+    "request" : {
+      "method" : "GET",
+      "path" : "/users",
+      "body" : { }
+    },
+    "response" : {
+      "status" : "200",
+      "headers" : { },
+      "body" : {
+        "total" : 1,
+        "records" : [ {
+          "id" : 1,
+          "name" : "test",
+          "birthDate" : "1970-01-01"
+        } ]
+      }
+    }
+  }, {
+    "description" : "Returns a user by ID.",
+    "request" : {
+      "method" : "GET",
+      "path" : "/users/1",
+      "body" : { }
+    },
+    "response" : {
+      "status" : "200",
+      "headers" : { },
+      "body" : {
+        "id" : 1,
+        "name" : "test",
+        "birthDate" : "1970-01-01"
+      }
+    }
+  }, {
+    "description" : "Replace user by ID.",
+    "request" : {
+      "method" : "PUT",
+      "path" : "/users/1",
+      "body" : {
+        "name" : "test",
+        "birthDate" : "1970-01-01"
+      }
+    },
+    "response" : {
+      "status" : "204",
+      "headers" : { }
+    }
+  }, {
+    "description" : "patch user by ID.",
+    "request" : {
+      "method" : "PATCH",
+      "path" : "/users/1",
+      "body" : {
+        "name" : "test",
+        "birthDate" : "1970-01-01"
+      }
+    },
+    "response" : {
+      "status" : "204",
+      "headers" : { }
+    }
+  }, {
+    "description" : "delete user by ID.",
+    "request" : {
+      "method" : "DELETE",
+      "path" : "/users/1",
+      "body" : { }
+    },
+    "response" : {
+      "status" : "204",
+      "headers" : { }
+    }
+  } ]
+}

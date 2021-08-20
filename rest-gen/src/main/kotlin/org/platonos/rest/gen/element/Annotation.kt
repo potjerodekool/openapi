@@ -18,4 +18,9 @@ class Annotation(val type: DeclaredType, val attributes: List<Attribute> = empty
     fun <P,R> accept(treeVisitor: TreeVisitor<P,R>, param: P): R {
         return treeVisitor.visitAnnotation(this, param)
     }
+
+    override fun toString(): String {
+        val attrString = attributes.joinToString(separator = ",")
+        return "@$type($attrString)"
+    }
 }

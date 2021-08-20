@@ -38,7 +38,7 @@ abstract class AbstractModelBuilder(
             .withEnclosingElement(packageElement)
             .withSimpleName(modelName)
 
-        visitModel(schema, null)
+        visitSchema(schema, null)
         val typeElement = typeElementBuilder.build()
         sourcePath.addTypeElement(typeElement)
         return typeElement
@@ -66,7 +66,7 @@ abstract class AbstractModelBuilder(
         }
     }
 
-    override fun visitModel(schema: Schema, param: Any?): Any? {
+    override fun visitSchema(schema: Schema, param: Any?): Any? {
         visitProperties(schema, schema)
         visitAllOfSchemas(schema)
         return null

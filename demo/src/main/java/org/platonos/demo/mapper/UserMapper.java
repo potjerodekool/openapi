@@ -1,8 +1,8 @@
 package org.platonos.demo.mapper;
 
+import org.platonos.demo.api.model.UserDto;
+import org.platonos.demo.api.model.UserResponseDto;
 import org.platonos.demo.data.entity.User;
-import org.some.models.UserDto;
-import org.some.models.UserResponseDto;
 
 public class UserMapper {
 
@@ -14,6 +14,10 @@ public class UserMapper {
     }
 
     public UserResponseDto toUserResponseDto(final User user) {
-        return new UserResponseDto();
+        UserResponseDto dto = new UserResponseDto();
+        dto.setId(user.getId());
+        dto.setName(user.getName());
+        dto.setBirthDate(user.getBirthDate());
+        return dto;
     }
 }

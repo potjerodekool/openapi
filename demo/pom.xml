@@ -16,13 +16,28 @@
     <version>1.0</version>
 
     <properties>
-        <maven.compiler.source>15</maven.compiler.source>
-        <maven.compiler.target>15</maven.compiler.target>
-
+        <java.version>16</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
         <openapi.generator.version>5.2.0</openapi.generator.version>
+        <pact.version>4.2.9</pact.version>
+        <pact.consumer.version>3.6.15</pact.consumer.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.200</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -42,12 +57,44 @@
             <artifactId>springdoc-openapi-ui</artifactId>
             <version>1.5.10</version>
         </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>2.0.1.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>6.0.13.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jpa</artifactId>
+            <version>2.5.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.20</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>au.com.dius.pact.provider</groupId>
+            <artifactId>junit5</artifactId>
+            <version>${pact.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>au.com.dius</groupId>
+            <artifactId>pact-jvm-consumer-junit5_2.12</artifactId>
+            <version>${pact.consumer.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -60,46 +107,22 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>generate-models</goal>
-                        </goals>
-                        <configuration>
-                            <openApiFile>openapi/users.yml</openApiFile>
-                            <generateModels>true</generateModels>
-                            <generateApiDefintions>true</generateApiDefintions>
-                            <generateApiImplementations>false</generateApiImplementations>
-                            <dynamicModels>
-                            </dynamicModels>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <!--
-            <plugin>
-                <groupId>org.openapitools</groupId>
-                <artifactId>openapi-generator-maven-plugin</artifactId>
-                <version>${openapi.generator.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <verbose>false</verbose>
-                            <configOptions>
-                                <apiFirst>true</apiFirst>
-                            </configOptions>
-                            <inputSpec>${project.basedir}/openapi/users.yml</inputSpec>
-                            <generatorName>spring</generatorName>
-                            <apiPackage>org.platonos.api</apiPackage>
-                            <modelPackage>org.platonos.api.model</modelPackage>
-                            <configOptions>
-                                <sourceFolder>src/gen/java/main</sourceFolder>
-                            </configOptions>
+                            <openApiFile>openapi/spec.yml</openApiFile>
+                            <modelPackage>org.platonos.demo.api.model</modelPackage>
+                            <apiPackageName>org.platonos.demo.api</apiPackageName>
+                            <generateModels>true</generateModels>
+                            <generateApiDefintions>true</generateApiDefintions>
+                            <generateApiImplementations>true</generateApiImplementations>
+                            <dynamicModels>
+                            </dynamicModels>
+                            <generatePacts>true</generatePacts>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-            -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
@@ -114,9 +137,6 @@
                         <configuration>
                             <sources>
                                 <source>target/generated-sources</source>
-                                <!--
-                                <source>target/generated-sources/openapi/src/gen/java/main</source>
-                                -->
                             </sources>
                         </configuration>
                     </execution>
@@ -125,6 +145,46 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.7</version>
+                <executions>
+                    <execution>
+                        <id>pre-unit-test</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>post-unit-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>jacoco-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.1</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

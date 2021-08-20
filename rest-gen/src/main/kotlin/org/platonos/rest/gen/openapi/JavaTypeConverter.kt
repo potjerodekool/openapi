@@ -7,7 +7,11 @@ import org.platonos.rest.gen.type.TypeKind
 import java.time.LocalDate
 import java.util.*
 
-class JavaTypeConverter(private val types: TypesJava) : TypeConverter {
+class JavaTypeConverter(
+    private val types: TypesJava,
+    private val modelNamingStrategy: ModelNamingStrategy,
+    private val modelPackageName: String
+) : TypeConverter {
 
     override fun convert(type: String,
                          schema: Schema): Type {
@@ -42,6 +46,17 @@ class JavaTypeConverter(private val types: TypesJava) : TypeConverter {
                 }
             }
             OpenApiType.BOOLEAN -> types.getBoolean(schema.isNullable)
+            OpenApiType.ARRAY -> {
+                val itemsSchema = schema.itemsSchema
+                DeclaredType(
+                    "java.util.List",
+                    listOf(convert(itemsSchema.type, itemsSchema))
+                )
+            }
+            OpenApiType.OBJECT -> {
+                val modelName = modelNamingStrategy.createModelName(schema)
+                DeclaredType("${modelPackageName}.${modelName}")
+            }
         }
     }
 

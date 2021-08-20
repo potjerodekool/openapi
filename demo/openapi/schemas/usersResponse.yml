@@ -1,0 +1,9 @@
+type: object
+properties:
+  total:
+    type: integer
+    format: int64
+  records:
+    type: array
+    items:
+      $ref: 'userResponse.yml'

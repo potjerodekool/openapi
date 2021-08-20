@@ -7,7 +7,9 @@ enum class OpenApiType(val type: String) {
     NUMBER("number"),
     INTEGER("integer"),
     BOOLEAN("boolean"),
-    STRING("string");
+    STRING("string"),
+    ARRAY("array"),
+    OBJECT("object");
 
     companion object {
 

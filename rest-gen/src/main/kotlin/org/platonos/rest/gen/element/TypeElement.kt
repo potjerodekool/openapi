@@ -1,6 +1,7 @@
 package org.platonos.rest.gen.element
 
 import org.platonos.rest.gen.TreeVisitor
+import org.platonos.rest.gen.element.ElementFilter.constructorAndMethods
 import org.platonos.rest.gen.element.ElementFilter.fields
 import org.platonos.rest.gen.element.ElementFilter.methods
 import org.platonos.rest.gen.element.builder.TypeElementBuilder
@@ -22,7 +23,7 @@ class TypeElement(builder: TypeElementBuilder):
 
     val methods: List<MethodElement>
         get() {
-            return methods(enclosedElements)
+            return constructorAndMethods(enclosedElements)
         }
 
     val interfaces: List<DeclaredType> = builder.interfaces

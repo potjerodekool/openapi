@@ -1,5 +1,6 @@
 package org.platonos.rest.gen.openapi
 
+import org.platonos.rest.gen.AstTree
 import org.platonos.rest.gen.TreeVisitor
 import org.platonos.rest.gen.element.*
 import org.platonos.rest.gen.element.Annotation
@@ -71,7 +72,7 @@ class ImportOrganiser : TreeVisitor<Any?,Any> {
 
         val newReturnType = methodElement.returnType.accept(this, param) as Type
 
-        val newBody = methodElement.body.accept(this, param) as Statement
+        val newBody = methodElement.body?.accept(this, param) as Statement?
 
         return methodElement.builder()
             .withoutAnnotations()
@@ -133,7 +134,14 @@ class ImportOrganiser : TreeVisitor<Any?,Any> {
     }
 
     private fun isInSamePackage(className: String): Boolean {
-        return className.startsWith("$packageName.")
+        val sep = className.lastIndexOf('.')
+
+        if (sep < 0) {
+            return false
+        } else {
+            val classPackageName = className.substring(0, sep)
+            return classPackageName == packageName
+        }
     }
 
     override fun visitNoType(noType: NoType, param: Any?): Any {
@@ -232,6 +240,29 @@ class ImportOrganiser : TreeVisitor<Any?,Any> {
     }
 
     override fun visitArrayAttributeValue(arrayAttributeValue: ArrayAttributeValue, param: Any?): Any {
-        return arrayAttributeValue
+        val newValues = arrayAttributeValue.values
+            .map { value -> value.accept(this, param) as AttributeValue }
+
+        return ArrayAttributeValue(newValues)
+    }
+
+    override fun visitAnnotationAttributeValue(annotationAttributeValue: AnnotationAttributeValue, param: Any?): Any {
+        val newAnnotation = annotationAttributeValue.annotation.accept(this, param) as Annotation
+        return AnnotationAttributeValue(newAnnotation)
+    }
+
+    override fun visitClassAttributeValue(classAttributeValue: ClassAttributeValue, param: Any?): Any {
+        val newDeclaredType = classAttributeValue.declaredType.accept(this, param) as DeclaredType
+        return ClassAttributeValue(newDeclaredType)
+    }
+
+    override fun visitEmptyStatement(emptyStatement: EmptyStatement, param: Any?): Any {
+        return emptyStatement
+    }
+
+    override fun visitLambaExpression(lambdaExpression: LambdaExpression, param: Any?): Any {
+        val newParameters = lambdaExpression.parameters.map { parameter -> parameter.accept(this, param) as Expression }
+        val newBody = lambdaExpression.body.accept(this, param) as AstTree
+        return LambdaExpression(newParameters, newBody)
     }
 }

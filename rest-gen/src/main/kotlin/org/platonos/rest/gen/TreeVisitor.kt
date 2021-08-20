@@ -2,14 +2,8 @@ package org.platonos.rest.gen
 
 import org.platonos.rest.gen.element.*
 import org.platonos.rest.gen.element.Annotation
-import org.platonos.rest.gen.expression.FieldAccess
-import org.platonos.rest.gen.expression.IdentifierExpression
-import org.platonos.rest.gen.expression.MethodInvocation
-import org.platonos.rest.gen.expression.OperatorExpression
-import org.platonos.rest.gen.statement.BlockStatement
-import org.platonos.rest.gen.statement.ExpressionStatement
-import org.platonos.rest.gen.statement.ReturnStatement
-import org.platonos.rest.gen.statement.VariableDeclaration
+import org.platonos.rest.gen.expression.*
+import org.platonos.rest.gen.statement.*
 import org.platonos.rest.gen.type.DeclaredType
 import org.platonos.rest.gen.type.NoType
 import org.platonos.rest.gen.type.PrimitiveType
@@ -59,4 +53,12 @@ interface TreeVisitor<P,R> {
     fun visitOperatorExpression(operatorExpression: OperatorExpression, param: P): R
 
     fun visitArrayAttributeValue(arrayAttributeValue: ArrayAttributeValue, param: P): R
+
+    fun visitAnnotationAttributeValue(annotationAttributeValue: AnnotationAttributeValue, param: P): R
+
+    fun visitClassAttributeValue(classAttributeValue: ClassAttributeValue, param: P): R
+
+    fun visitEmptyStatement(emptyStatement: EmptyStatement, param: P): R
+
+    fun visitLambaExpression(lambdaExpression: LambdaExpression, param: P): R
 }

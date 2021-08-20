@@ -11,7 +11,7 @@ import org.platonos.rest.gen.type.Type
 class MethodBuilder : AbstractElementBuilder<MethodBuilder> {
 
     var returnType: Type = PrimitiveType.VOID
-    var body: BlockStatement = BlockStatement()
+    var body: Statement? = null
     val parameters = mutableListOf<VariableElement>()
     var javaDoc: JavaDoc? = null
 
@@ -29,8 +29,8 @@ class MethodBuilder : AbstractElementBuilder<MethodBuilder> {
         return this
     }
 
-    fun withBody(statement: Statement): MethodBuilder {
-        val newBody = if (statement is BlockStatement) statement else BlockStatement(statement)
+    fun withBody(statement: Statement?): MethodBuilder {
+        val newBody = if (statement == null || statement is BlockStatement) statement else BlockStatement(statement)
         this.body = newBody
         return this
     }

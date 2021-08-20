@@ -2,13 +2,17 @@ package org.platonos.rest.gen.openapi.generator.api
 
 import com.reprezen.kaizen.oasparser.model3.Operation
 import org.platonos.rest.gen.doc.JavaDoc
+import org.platonos.rest.gen.openapi.api.HttpMethod
 import kotlin.text.StringBuilder
 
-fun createJavaDoc(operation: Operation): JavaDoc {
+fun createJavaDoc(httpMethod: HttpMethod,
+                  url: String,
+                  operation: Operation,
+): JavaDoc {
     val jdb = JavaDocBuilder()
 
     if (operation.summary != null) {
-        jdb.append("* ${operation.summary}").appendNewLine()
+        jdb.append("* $httpMethod $url : ${operation.summary}").appendNewLine()
     }
 
     if (operation.description != null) {
@@ -22,10 +26,13 @@ fun createJavaDoc(operation: Operation): JavaDoc {
             jdb.appendNewLine()
             jdb.append("* @param ${parameter.name}")
 
+            if (parameter.isRequired) {
+                jdb.append(" (required)")
+            }
+
             if (parameter.description.isNullOrEmpty().not()) {
                 jdb.append(" $parameterDescription")
             }
-
         }
 
         jdb.appendNewLine()
@@ -49,7 +56,7 @@ fun createJavaDoc(operation: Operation): JavaDoc {
                 if (responseIndex > 0) {
                     jdb.appendNewLine()
                 }
-                jdb.append("* $statusCode").append(" : ").append(response.description)
+                jdb.append("* ${response.description} (status code $statusCode)")
                 responseIndex++
             }
         }

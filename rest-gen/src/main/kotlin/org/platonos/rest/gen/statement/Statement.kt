@@ -1,8 +1,7 @@
 package org.platonos.rest.gen.statement
 
-import org.platonos.rest.gen.TreeVisitor
+import org.platonos.rest.gen.AstTree
 
-abstract class Statement {
+abstract class Statement : AstTree {
 
-    abstract fun <P,R> accept(treeVisitor: TreeVisitor<P, R>, param: P): R
 }

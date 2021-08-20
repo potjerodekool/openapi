@@ -7,11 +7,12 @@ import org.apache.maven.plugins.annotations.Parameter
 import org.platonos.rest.gen.openapi.Build
 import org.platonos.rest.gen.openapi.OpenApiGenerator
 import org.platonos.rest.gen.openapi.Options
+import org.platonos.rest.gen.pact.PactsGenerator
 import org.platonos.rest.gen.util.Logger
 import java.io.File
 
 @Mojo(
-    name = "generate-models",
+    name = "generate",
     defaultPhase = LifecyclePhase.GENERATE_SOURCES
 )
 class PlatonosRestMojo : AbstractMojo() {
@@ -39,6 +40,9 @@ class PlatonosRestMojo : AbstractMojo() {
 
     @Parameter(property = "dynamicModels", required = false)
     private var dynamicModels: String? = null
+
+    @Parameter(property = "generatePacts", required = false, defaultValue = "false")
+    private var generatePacts: Boolean = false
 
     override fun execute() {
         if (openApiFile.isEmpty()) {
@@ -69,6 +73,12 @@ class PlatonosRestMojo : AbstractMojo() {
 
         val build = Build(generatedSourceDirectory, generatedSourceDirectory)
         generator.generate(options, build)
+
+        if (generatePacts) {
+            val pactsGenerator = PactsGenerator()
+            pactsGenerator.generate(File(openApiFile), File("target/test-classes/generated-pacts"))
+        }
+
     }
 
     private fun parseDynamicModels(): List<String> {

@@ -14,4 +14,10 @@ object ElementFilter {
             .map { it as MethodElement }
     }
 
+    fun constructorAndMethods(elements: List<AbstractElement<*>>): List<MethodElement>  {
+        return elements
+            .filter { it.kind === ElementKind.CONSTRUCTOR || it.kind == ElementKind.METHOD }
+            .map { it as MethodElement }
+    }
+
 }

@@ -4,5 +4,5 @@ import org.platonos.rest.gen.TreeVisitor
 
 interface Visitable {
 
-    fun <P,R> accept(visitor: TreeVisitor<P, R>, param: P): R
+    fun <P,R> accept(treeVisitor: TreeVisitor<P, R>, param: P): R
 }
