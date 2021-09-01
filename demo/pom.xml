@@ -16,7 +16,7 @@
     <version>1.0</version>
 
     <properties>
-        <java.version>16</java.version>
+        <java.version>15</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <openapi.generator.version>5.2.0</openapi.generator.version>
@@ -117,8 +117,11 @@
                             <generateApiDefintions>true</generateApiDefintions>
                             <generateApiImplementations>true</generateApiImplementations>
                             <dynamicModels>
+                                CompanyDto
                             </dynamicModels>
-                            <generatePacts>true</generatePacts>
+                            <!--
+               https://www.baeldung.com/jackson-mapping-dynamic-object
+                            -->
                         </configuration>
                     </execution>
                 </executions>

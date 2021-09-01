@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SimpleMapperTest {
 
+    /*
     @Test
     void map() {
         val userDto = new UserDto();
@@ -17,4 +18,5 @@ class SimpleMapperTest {
         val mapper = new SimpleMapper();
         mapper.map(userDto, user);
     }
+    */
 }

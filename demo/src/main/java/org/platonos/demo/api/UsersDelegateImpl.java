@@ -7,7 +7,7 @@ import org.platonos.demo.api.model.UserResponseDto;
 import org.platonos.demo.api.model.UsersResponseDto;
 import org.platonos.demo.data.entity.User;
 import org.platonos.demo.mapper.UserMapper;
-import org.platonos.demo.service.UsersService;
+import org.platonos.demo.service.UsersServiceImpl;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @Component
 public class UsersDelegateImpl implements UsersDelegate {
 
-    private final UsersService usersService;
+    private final UsersServiceImpl usersService;
     private final UserMapper mapper = new UserMapper();
 
     @Override

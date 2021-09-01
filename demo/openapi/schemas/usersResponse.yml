@@ -7,3 +7,6 @@ properties:
     type: array
     items:
       $ref: 'userResponse.yml'
+required:
+  - total
+  - records

@@ -1,9 +1,9 @@
 package org.platonos.rest.build.maven
 
 import org.apache.maven.plugin.Mojo
-import org.platonos.rest.gen.util.LogLevel
-import org.platonos.rest.gen.util.Logger
-import org.platonos.rest.gen.util.LoggerFactory
+import org.platonos.rest.generate.util.LogLevel
+import org.platonos.rest.generate.util.Logger
+import org.platonos.rest.generate.util.LoggerFactory
 
 class MavenLoggerFactory(private val mojo: Mojo) : LoggerFactory {
 

@@ -4,17 +4,23 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>rest-dto-parent</artifactId>
-    <groupId>org.platonos.rest</groupId>
+    <groupId>com.github.potjerodekool</groupId>
+    <artifactId>rest-parent</artifactId>
+    <version>1.0</version>
+    <!--
     <version>1.0-SNAPSHOT</version>
+    -->
     <packaging>pom</packaging>
 
     <name>rest-dto-parent</name>
 
     <modules>
+        <!--
         <module>common</module>
-        <module>rest-gen</module>
+        <module>rest-generator</module>
         <module>maven-plugin</module>
+        -->
+        <!-- <module>liquibase-generator</module> -->
     </modules>
 
     <properties>
@@ -29,6 +35,7 @@
     </properties>
 
     <repositories>
+        <!--
         <repository>
             <id>nexus</id>
             <url>http://192.168.178.164:49154/repository/maven-releases/</url>
@@ -36,6 +43,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        -->
         <repository>
             <id>mavenCentral</id>
             <url>https://repo1.maven.org/maven2/</url>
@@ -44,9 +52,16 @@
 
     <distributionManagement>
         <repository>
+            <id>github</id>
+            <name>GitHub Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/podjerodekool/openapi</url>
+        </repository>
+        <!--
+        <repository>
             <id>nexus</id>
             <url>http://192.168.178.164:49154/repository/maven-releases/</url>
         </repository>
+        -->
     </distributionManagement>
 
     <build>

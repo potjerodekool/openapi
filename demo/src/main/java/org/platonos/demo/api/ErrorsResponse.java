@@ -2,5 +2,15 @@ package org.platonos.demo.api;
 
 import java.util.List;
 
-public record ErrorsResponse(List<FieldErrorResponse> fieldErrors) {
+public class ErrorsResponse {
+
+    private final List<FieldErrorResponse> fieldErrors;
+
+    public ErrorsResponse(List<FieldErrorResponse> fieldErrors) {
+        this.fieldErrors = fieldErrors;
+    }
+
+    public List<FieldErrorResponse> getFieldErrors() {
+        return fieldErrors;
+    }
 }

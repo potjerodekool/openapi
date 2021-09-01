@@ -10,9 +10,9 @@ import org.platonos.demo.DemoApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest(classes = DemoApplication.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-@ActiveProfiles("pacts")
-@PactFolder("generated-pacts")
+//@SpringBootTest(classes = DemoApplication.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+//@ActiveProfiles("pacts")
+//@PactFolder("generated-pacts")
 public abstract class AbstractPactTest {
 
     @TestTemplate
