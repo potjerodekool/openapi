@@ -35,7 +35,28 @@
     </properties>
 
     <repositories>
-        <!--
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/potjerodekool/openapi</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+    </repositories>
+
+    <!--
+    <repositories>
+        <repository>
+            <id>github</id>
+            <name>GitHub Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/potjerodekool/*</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+    </repositories>
+    -->
+
+    <!--
+
         <repository>
             <id>nexus</id>
             <url>http://192.168.178.164:49154/repository/maven-releases/</url>
@@ -43,26 +64,44 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-        -->
         <repository>
             <id>mavenCentral</id>
             <url>https://repo1.maven.org/maven2/</url>
         </repository>
-    </repositories>
+
+    -->
 
     <distributionManagement>
         <repository>
             <id>github</id>
-            <name>GitHub Apache Maven Packages</name>
+            <name>GitHub</name>
             <url>https://maven.pkg.github.com/podjerodekool/openapi</url>
         </repository>
-        <!--
+    </distributionManagement>
+
+    <!--
+    <distributionManagement>
+        <!-
+        <repository>
+            <id>internal.repo</id>
+            <name>Temporary Staging Repository</name>
+            <url>file://${project.build.directory}/mvn-artifact</url>
+        </repository>
+        ->
+        <repository>
+            <id>github</id>
+            <name>GitHub</name>
+            <url>https://maven.pkg.github.com/podjerodekool/maven-packages/</url>
+        </repository>
+
+        <!-
         <repository>
             <id>nexus</id>
             <url>http://192.168.178.164:49154/repository/maven-releases/</url>
         </repository>
-        -->
+        ->
     </distributionManagement>
+    -->
 
     <build>
         <plugins>
@@ -105,6 +144,17 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven-deploy-plugin.version}</version>
+                <!--
+                <configuration>
+                    <altDeploymentRepository>
+                        internal.repo::default::file://${project.build.directory}/mvn-artifact
+                    </altDeploymentRepository>
+                </configuration>
+                -->
             </plugin>
         </plugins>
     </build>
