@@ -21,8 +21,8 @@
     <distributionManagement>
         <repository>
             <id>github</id>
-            <name>GitHub</name>
-            <url>https://maven.pkg.github.com/podjerodekool/openapi</url>
+            <name>GitHub potjerodekool Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/potjerodekool/openapi</url>
         </repository>
     </distributionManagement>
 

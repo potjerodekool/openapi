@@ -11,10 +11,19 @@
 
     <artifactId>rest-generator</artifactId>
     <version>1.0</version>
+    <packaging>jar</packaging>
 
     <properties>
         <asm.version>9.1</asm.version>
     </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub potjerodekool Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/potjerodekool/openapi</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
         <dependency>

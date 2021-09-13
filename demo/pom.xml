@@ -101,9 +101,9 @@
         <finalName>demo.jar</finalName>
         <plugins>
             <plugin>
-                <groupId>org.platonos.rest</groupId>
+                <groupId>com.github.potjerodekool</groupId>
                 <artifactId>maven-plugin</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>1.0</version>
                 <executions>
                     <execution>
                         <goals>
