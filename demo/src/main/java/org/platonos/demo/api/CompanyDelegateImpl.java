@@ -1,6 +1,7 @@
 package org.platonos.demo.api;
 
-import org.platonos.demo.api.model.CompanyDto;
+import org.platonos.demo.api.model.CompanyRequestDto;
+import org.platonos.demo.api.model.CompanyResponseDto;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -9,13 +10,14 @@ import java.util.Map;
 @Component
 public class CompanyDelegateImpl implements CompaniesDelegate {
 
+
     @Override
-    public Object createCompany(Map<String, Object> body, HttpServletRequest httpServletRequest) {
+    public CompanyResponseDto getCompanies(int coreCompanyId, HttpServletRequest request) {
         return null;
     }
 
     @Override
-    public CompanyDto get(int coreCompanyId, HttpServletRequest httpServletRequest) {
-        return null;
+    public int createCompany(CompanyRequestDto model, HttpServletRequest request) {
+        return 0;
     }
 }

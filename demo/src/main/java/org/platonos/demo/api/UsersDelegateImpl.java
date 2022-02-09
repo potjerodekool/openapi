@@ -1,8 +1,8 @@
 package org.platonos.demo.api;
 
 import lombok.RequiredArgsConstructor;
-import org.platonos.demo.api.model.UserDto;
 import org.platonos.demo.api.model.UserPatchDto;
+import org.platonos.demo.api.model.UserRequestDto;
 import org.platonos.demo.api.model.UserResponseDto;
 import org.platonos.demo.api.model.UsersResponseDto;
 import org.platonos.demo.data.entity.User;
@@ -23,16 +23,17 @@ public class UsersDelegateImpl implements UsersDelegate {
     private final UserMapper mapper = new UserMapper();
 
     @Override
-    public int createUser(final UserDto user,
+    public int createUser(final UserRequestDto user,
                           final HttpServletRequest request) {
         return usersService.create(user);
     }
 
     @Override
-    public Optional<UserResponseDto> getUserById(final int userId,
-                                                 final HttpServletRequest request) {
+    public UserResponseDto getUserById(final int userId,
+                                       final HttpServletRequest request) {
         return usersService.findById(userId)
-                .map(mapper::toUserResponseDto);
+                .map(mapper::toUserResponseDto)
+                .get();
     }
 
     @Override
@@ -48,7 +49,7 @@ public class UsersDelegateImpl implements UsersDelegate {
 
     @Override
     public void replaceUserById(final int userId,
-                                final UserDto userDto,
+                                final UserRequestDto userDto,
                                 final HttpServletRequest httpServletRequest) {
         usersService.replaceUserById(userId, userDto);
     }

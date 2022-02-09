@@ -2,7 +2,7 @@ package org.platonos.rest.generate.element
 
 import org.platonos.rest.generate.TreeVisitor
 
-class ConstantAttributeValue(val constant: Any): AttributeValue {
+class ConstantAttributeValue(private val constant: Any): AttributeValue {
 
     override fun toString(): String {
         return constant.toString()

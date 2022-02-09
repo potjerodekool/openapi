@@ -4,6 +4,8 @@ import org.platonos.rest.generate.TreeVisitor
 
 interface Type {
 
+    fun isPrimitive(): Boolean = false
+
     fun getQualifiedName(): String {
         return getSimpleName()
     }

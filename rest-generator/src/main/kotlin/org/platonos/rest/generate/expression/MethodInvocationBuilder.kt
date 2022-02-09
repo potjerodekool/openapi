@@ -13,6 +13,16 @@ class MethodInvocationBuilder {
         return this
     }
 
+    fun select(vararg select: String): MethodInvocationBuilder {
+        select.forEach {
+                methodSelect =
+                if (methodSelect == null) IdentifierExpression(it)
+                else FieldAccess(methodSelect, IdentifierExpression(it))
+        }
+
+        return this
+    }
+
     fun withTypeArg(typeArg: Type): MethodInvocationBuilder {
         this.typeArgs += typeArg
         return this

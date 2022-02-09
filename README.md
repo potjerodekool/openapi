@@ -5,7 +5,7 @@ Code generation for Spring.
 <plugin>
     <groupId>com.github.potjerodekool</groupId>
     <artifactId>maven-plugin</artifactId>
-    <version>1.0</version>
+    <version>1.0-SNAPSHOT</version>
     <executions>
         <execution>
             <goals>
@@ -18,9 +18,6 @@ Code generation for Spring.
                 <generateModels>true</generateModels>
                 <generateApiDefintions>true</generateApiDefintions>
                 <generateApiImplementations>true</generateApiImplementations>
-                <dynamicModels>
-                    CompanyDto
-                </dynamicModels>
             </configuration>
         </execution>
     </executions>

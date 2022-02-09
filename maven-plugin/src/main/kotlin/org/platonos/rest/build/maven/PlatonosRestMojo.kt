@@ -19,10 +19,10 @@ import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.resolution.ArtifactRequest
 import org.eclipse.aether.resolution.ArtifactResolutionException
 import org.platonos.rest.generate.Build
-import org.platonos.rest.generate.Generator
 import org.platonos.rest.generate.ProjectInfo
-import org.platonos.rest.generate.openapi.Options
-import org.platonos.rest.generate.util.Logger
+import org.platonos.rest.openapi.Options
+import org.platonos.rest.generate2.util.Logger
+import org.platonos.rest.generate2.Generator2
 import java.io.File
 
 @Mojo(
@@ -69,6 +69,9 @@ class PlatonosRestMojo : AbstractMojo() {
     @Parameter(property = "dynamicModels", required = false)
     private var dynamicModels: String? = null
 
+    @Parameter(property = "features", required = false)
+    private var features: Map<String, Boolean> = emptyMap()
+
     override fun execute() {
         repositorySystemSession = DefaultRepositorySystemSession(repoSession)
 
@@ -86,8 +89,6 @@ class PlatonosRestMojo : AbstractMojo() {
 
         Logger.setLoggerFactory(MavenLoggerFactory(this))
 
-        val generator = Generator()
-
         val options = Options(
             fileName = openApiFile,
             modelPackageName = modelPackage,
@@ -95,10 +96,9 @@ class PlatonosRestMojo : AbstractMojo() {
             generateModels = generateModels,
             generateApiDefintions = generateApiDefintions,
             generateApiImplementations = generateApiImplementations,
-            dynamicModels = parseDynamicModels()
+            dynamicModels = parseDynamicModels(),
+            features = features
         )
-
-        project.compileSourceRoots
 
         val build = Build(generatedSourceDirectory)
 
@@ -107,7 +107,9 @@ class PlatonosRestMojo : AbstractMojo() {
             resolveDependencies(),
             build
         )
-        generator.generate(options, projectInfo)
+
+        val generator2 = Generator2(options, projectInfo)
+        generator2.execute()
     }
 
     private fun resolveDependencies(): List<String> {

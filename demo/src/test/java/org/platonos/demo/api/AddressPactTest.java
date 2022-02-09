@@ -1,14 +1,9 @@
 package org.platonos.demo.api;
 
-import au.com.dius.pact.provider.junitsupport.Provider;
 import org.junit.jupiter.api.BeforeEach;
-import org.platonos.demo.api.model.AddressDto;
 import org.platonos.demo.api.model.AddressResponseDto;
-import org.platonos.demo.api.model.UserResponseDto;
-import org.platonos.demo.api.model.UsersResponseDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,7 +15,7 @@ import static org.mockito.Mockito.when;
 public class AddressPactTest extends AbstractPactTest {
 
     @MockBean
-    private AddressesDelegate addressesDelegate;
+    private UsersAddressesDelegate addressesDelegate;
 
     @BeforeEach
     void beforeEach() {
@@ -33,7 +28,7 @@ public class AddressPactTest extends AbstractPactTest {
                 any(),
                 any()
         )).thenReturn(1);
-
+/*
         when(addressesDelegate.getUserAddresses(
                 eq(1),
                 any()
@@ -44,7 +39,7 @@ public class AddressPactTest extends AbstractPactTest {
                 eq(1),
                 any()
         )).thenReturn(Optional.of(addressResponseDto));
-
+*/
     }
 
 }

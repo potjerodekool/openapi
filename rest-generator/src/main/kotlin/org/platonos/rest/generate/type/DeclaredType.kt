@@ -6,6 +6,8 @@ class DeclaredType(private val qualifiedName: String,
                    val enclosingType: DeclaredType? = null,
                    val typeArgs: List<Type> = emptyList()) : Type {
 
+    constructor(qualifiedName: String, vararg typeArgs: Type): this (qualifiedName, listOf(*typeArgs))
+
     constructor(qualifiedName: String,
                 typeArgs: List<Type> = emptyList()): this(qualifiedName, null, typeArgs)
 

@@ -1,0 +1,14 @@
+paths:
+  /users/{userId}:
+    get:
+      summary: Returns a user by ID.
+      operationId: 'getUserById'
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema: {
+            type: integer,
+            format: int32
+          }
+

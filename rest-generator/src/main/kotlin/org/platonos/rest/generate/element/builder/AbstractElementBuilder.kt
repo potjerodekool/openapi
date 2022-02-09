@@ -82,6 +82,11 @@ abstract class AbstractElementBuilder<EB : AbstractElementBuilder<EB>>() {
         return this as EB
     }
 
+    fun getQualifiedName(): String {
+        val packageElement = enclosingElement as QualifiedNameable
+        return "${packageElement.getQualifiedName()}.${simpleName}"
+    }
+
     abstract fun build(): AbstractElement<*>
 
 }

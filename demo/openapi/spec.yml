@@ -37,7 +37,7 @@ paths:
       operationId: 'getUserById'
       parameters:
         - in: path
-          name: userId
+          name: id
           required: true
           schema: {
             type: integer,
@@ -49,7 +49,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: 'schemas/userResponse.yml'
+                $ref: 'schemas/user.yml'
+        '404':
+          description: Not found
     put:
       summary: Replace user by ID.
       operationId: 'replaceUserById'
@@ -61,7 +63,7 @@ paths:
               $ref: 'schemas/user.yml'
       parameters:
         - in: path
-          name: userId
+          name: id
           required: true
           schema: {
             type: integer,
@@ -81,7 +83,7 @@ paths:
               $ref: 'schemas/user.yml'
       parameters:
         - in: path
-          name: userId
+          name: id
           required: true
           schema: {
             type: integer,
@@ -95,7 +97,7 @@ paths:
       operationId: 'deleteUserById'
       parameters:
         - in: path
-          name: userId
+          name: id
           required: true
           schema: {
             type: integer,
@@ -111,7 +113,7 @@ paths:
       operationId: 'getUserAddresses'
       parameters:
         - in: path
-          name: userId
+          name: id
           required: true
           schema: {
             type: integer,
@@ -129,7 +131,7 @@ paths:
       operationId: 'createAddressForUser'
       parameters:
         - in: path
-          name: userId
+          name: id
           required: true
           schema: {
             type: integer,
@@ -150,7 +152,7 @@ paths:
       operationId: 'getAddressOfUserById'
       parameters:
         - in: path
-          name: userId
+          name: id
           required: true
           schema: {
             type: integer,
@@ -169,7 +171,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: 'schemas/addressResponse.yml'
+                $ref: 'schemas/address.yml'
     patch:
       summary: patch address of user by ID.
       operationId: 'patchAddressOfUser'
@@ -181,7 +183,7 @@ paths:
               $ref: 'schemas/address.yml'
       parameters:
         - in: path
-          name: userId
+          name: id
           required: true
           schema: {
             type: integer,

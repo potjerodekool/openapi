@@ -1,7 +1,0 @@
-type: object
-allOf:
-  - $ref: './address.yml'
-properties:
-  id:
-    type: integer
-    format: int32

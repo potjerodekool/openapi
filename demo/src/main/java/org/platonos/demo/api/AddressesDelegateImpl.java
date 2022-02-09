@@ -1,34 +1,33 @@
 package org.platonos.demo.api;
 
-import org.platonos.demo.api.model.AddressDto;
 import org.platonos.demo.api.model.AddressPatchDto;
+import org.platonos.demo.api.model.AddressRequestDto;
 import org.platonos.demo.api.model.AddressResponseDto;
+import org.platonos.demo.api.model.AddressesResponseDto;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.Optional;
 
 @Component
-public class AddressesDelegateImpl implements AddressesDelegate {
+public class AddressesDelegateImpl implements UsersAddressesDelegate {
 
     @Override
-    public int createAddressForUser(int userId, AddressDto body, HttpServletRequest httpServletRequest) {
-        return 1;
+    public AddressesResponseDto getUserAddresses(int userId, HttpServletRequest request) {
+        return null;
     }
 
     @Override
-    public List<AddressResponseDto> getUserAddresses(int userId, HttpServletRequest httpServletRequest) {
-        return List.of();
+    public int createAddressForUser(int userId, AddressRequestDto model, HttpServletRequest request) {
+        return 0;
     }
 
     @Override
-    public Optional<AddressResponseDto> getAddressOfUserById(int userId, int addressId, HttpServletRequest httpServletRequest) {
-        return Optional.empty();
+    public AddressResponseDto getAddressOfUserById(int userId, int addressId, HttpServletRequest request) {
+        return null;
     }
 
     @Override
-    public void patchAddressOfUser(int userId, int addressId, AddressPatchDto body, HttpServletRequest httpServletRequest) {
+    public void patchAddressOfUser(int userId, int addressId, AddressPatchDto model, HttpServletRequest request) {
 
     }
 }

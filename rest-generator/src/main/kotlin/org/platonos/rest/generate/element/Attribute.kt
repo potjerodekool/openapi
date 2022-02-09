@@ -36,7 +36,7 @@ class Attribute private constructor(val name: String, val value: AttributeValue)
             }
         }
 
-        private fun quote(s: String): String {
+        fun quote(s: String): String {
             return "\"$s\""
         }
     }

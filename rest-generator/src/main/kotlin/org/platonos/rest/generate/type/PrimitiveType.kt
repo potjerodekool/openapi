@@ -6,10 +6,12 @@ class PrimitiveType(private val name: String, private val kind: TypeKind) : Type
 
     companion object {
         val BOOLEAN = PrimitiveType("boolean", TypeKind.BOOLEAN)
+        val SHORT = PrimitiveType("short", TypeKind.SHORT)
+        val CHAR = PrimitiveType("char", TypeKind.CHAR)
         val INT = PrimitiveType("int", TypeKind.INT)
-        val LONG = PrimitiveType("long", TypeKind.INT)
-        val FLOAT = PrimitiveType("float", TypeKind.INT)
-        val DOUBLE = PrimitiveType("double", TypeKind.INT)
+        val LONG = PrimitiveType("long", TypeKind.LONG)
+        val FLOAT = PrimitiveType("float", TypeKind.FLOAT)
+        val DOUBLE = PrimitiveType("double", TypeKind.DOUBLE)
         val VOID = PrimitiveType("void", TypeKind.VOID)
     }
 
@@ -27,6 +29,10 @@ class PrimitiveType(private val name: String, private val kind: TypeKind) : Type
 
     override fun <P, R> accept(treeVisitor: TreeVisitor<P, R>, param: P): R {
         return treeVisitor.visitPrimitiveType(this, param)
+    }
+
+    override fun isPrimitive(): Boolean {
+        return true
     }
 
 }

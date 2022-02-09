@@ -6,7 +6,7 @@ properties:
   records:
     type: array
     items:
-      $ref: 'userResponse.yml'
+      $ref: 'user.yml'
 required:
   - total
   - records

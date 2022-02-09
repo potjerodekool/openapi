@@ -36,9 +36,10 @@ public class UsersPactTest extends AbstractPactTest {
                                 .total(1)
                                 .records(List.of(userDto))
                 );
-
+/*
         when(usersDelegate.getUserById(eq(1), any()))
                 .thenReturn(Optional.of(userDto));
+        */
     }
 
 }
