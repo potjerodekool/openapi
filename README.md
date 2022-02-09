@@ -23,3 +23,7 @@ Code generation for Spring.
     </executions>
 </plugin>
 ```
+You can place the paths in multiple files by placing them in a directory with the name paths like this:
+
+openapi/paths/group-api.yml  
+openapi/paths/user.yaml
